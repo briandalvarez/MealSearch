@@ -7,15 +7,18 @@
 
 import SwiftUI
 
+import SwiftUI
+
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
+        Text("MealSearch Home")
+            .font(.title)
+            .padding()
+            .task {
+                print("Testing recipe information…")
+                await testRecipeInformation()
+                print("Done testing recipe information")
+            }
     }
 }
 
