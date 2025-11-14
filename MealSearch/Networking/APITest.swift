@@ -31,7 +31,7 @@ func testRecipeInformation() async {
 
     do {
         // Fetch data from spoonacular API
-        let (data, response) = try await URLSession.shared.data(from: url)
+        let (data, _) = try await URLSession.shared.data(from: url)
 
         // Decode JSON into a dictionary
         let json = try JSONSerialization.jsonObject(with: data, options: [])

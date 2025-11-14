@@ -9,7 +9,12 @@ import SwiftUI
 
 struct IngredientsView: View {
     var body: some View {
-        Text("Ingredients View")
+        ZStack {
+            Color("BackgroundCream")
+                .ignoresSafeArea()
+            
+            Text("Ingredients View")
+        }
     }
 }
 

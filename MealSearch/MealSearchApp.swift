@@ -6,12 +6,13 @@
 //
 
 import SwiftUI
+import UIKit
 
 @main
 struct MealSearchApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainTabView()
         }
     }
 }
