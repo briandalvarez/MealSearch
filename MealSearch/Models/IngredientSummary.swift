@@ -6,3 +6,15 @@
 //
 
 import Foundation
+
+struct IngredientSummary: Decodable, Identifiable, Hashable {
+    let id: Int
+    let name: String
+    let original: String
+    let image: String?
+    
+    let amount: Double?
+    let unit: String?
+    let aisle: String? 
+    
+}

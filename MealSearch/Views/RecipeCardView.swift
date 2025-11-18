@@ -58,12 +58,12 @@ struct RecipeCardView: View {
     RecipeCardView(
         recipe: RecipeSummary(
             id: 9003,
-            title: "Apple Strudel",
-            image: "https://img.spoonacular.com/recipes/73420-312x231.jpg",
+            title: "Curried Butternut Squash and Apple Soup",
+            image: "https://img.spoonacular.com/recipes/641057-312x231.jpg",
             readyInMinutes: 45,
-            servings: 4,
-            usedIngredientCount: 3,
-            missedIngredientCount: 1
+            servings: 1,
+            usedIngredientCount: 0,
+            missedIngredientCount: 8
         )
     )
 }

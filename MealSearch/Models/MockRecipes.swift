@@ -64,6 +64,96 @@ enum MockRecipes {
             servings: 1,
             usedIngredientCount: 3,
             missedIngredientCount: 2
+        ),
+        RecipeSummary(
+            id: 715415,
+            title: "Red Lentil Soup with Chicken and Turnips",
+            image: "https://img.spoonacular.com/recipes/715415-312x231.jpg",
+            readyInMinutes: 55,
+            servings: 8,
+            usedIngredientCount: 3,
+            missedIngredientCount: 5
+        ),
+        RecipeSummary(
+            id: 716406,
+            title: "Asparagus and Pea Soup: Real Convenience Food",
+            image: "https://img.spoonacular.com/recipes/716406-312x231.jpg",
+            readyInMinutes: 20,
+            servings: 2,
+            usedIngredientCount: 2,
+            missedIngredientCount: 4
+        ),
+        RecipeSummary(
+            id: 644387,
+            title: "Garlicky Kale",
+            image: "https://img.spoonacular.com/recipes/644387-312x231.jpg",
+            readyInMinutes: 45,
+            servings: 2,
+            usedIngredientCount: 1,
+            missedIngredientCount: 3
+        ),
+        RecipeSummary(
+            id: 715446,
+            title: "Slow Cooker Beef Stew",
+            image: "https://img.spoonacular.com/recipes/715446-312x231.jpg",
+            readyInMinutes: 490,
+            servings: 6,
+            usedIngredientCount: 4,
+            missedIngredientCount: 6
+        ),
+        RecipeSummary(
+            id: 782601,
+            title: "Red Kidney Bean Jambalaya",
+            image: "https://img.spoonacular.com/recipes/782601-312x231.jpg",
+            readyInMinutes: 45,
+            servings: 6,
+            usedIngredientCount: 3,
+            missedIngredientCount: 5
+        ),
+        RecipeSummary(
+            id: 716426,
+            title: "Cauliflower, Brown Rice, and Vegetable Fried Rice",
+            image: "https://img.spoonacular.com/recipes/716426-312x231.jpg",
+            readyInMinutes: 30,
+            servings: 8,
+            usedIngredientCount: 4,
+            missedIngredientCount: 5
+        ),
+        RecipeSummary(
+            id: 716004,
+            title: "Quinoa and Chickpea Salad with Sun-Dried Tomatoes and Dried Cherries",
+            image: "https://img.spoonacular.com/recipes/716004-312x231.jpg",
+            readyInMinutes: 45,
+            servings: 6,
+            usedIngredientCount: 3,
+            missedIngredientCount: 5
+        ),
+        RecipeSummary(
+            id: 716627,
+            title: "Easy Homemade Rice and Beans",
+            image: "https://img.spoonacular.com/recipes/716627-312x231.jpg",
+            readyInMinutes: 35,
+            servings: 2,
+            usedIngredientCount: 2,
+            missedIngredientCount: 4
+        ),
+        RecipeSummary(
+            id: 664147,
+            title: "Tuscan White Bean Soup with Olive Oil and Rosemary",
+            image: "https://img.spoonacular.com/recipes/664147-312x231.jpg",
+            readyInMinutes: 45,
+            servings: 6,
+            usedIngredientCount: 2,
+            missedIngredientCount: 4
+        ),
+        RecipeSummary(
+            id: 640941,
+            title: "Crunchy Brussels Sprouts Side Dish",
+            image: "https://img.spoonacular.com/recipes/640941-312x231.jpg",
+            readyInMinutes: 30,
+            servings: 4,
+            usedIngredientCount: 1,
+            missedIngredientCount: 3
         )
     ]
 }

@@ -15,23 +15,24 @@ import Foundation
 
 struct RecipeSummary: Decodable, Identifiable, Hashable {
     // Required details for each recipe
-    // Based on the spoonacular API's JSON key-value pairs in documentation
+    // Based on the spoonacular API's JSON key-value pair names in documentation
     let id: Int
     let title: String
     let image: String
-    let usedIngredientCount: Int
-    let missedIngredientCount: Int
     
-    // Optional details that may not always be returned by the "Search Recipes" endpoint we are using
-    let readyInMinutes: Int?
-    let servings: Int?
-    let aggregateLikes: Int?
+    let readyInMinutes: Int
+    let servings: Int
+    
+    let usedIngredientCount: Int?
+    let missedIngredientCount: Int?
     
     // Calculate the percentage of ingredients the user already has for the ingredient wheel
     var matchRatio: Double {
-        let total = usedIngredientCount + missedIngredientCount
+        let used = usedIngredientCount ?? 0
+        let missed = missedIngredientCount ?? 0
+        let total = used + missed
         guard total > 0 else { return 0 }
-        return Double(usedIngredientCount) / Double(total)
+        return Double(used) / Double(total)
     }
     
     var matchPercent:Int {
