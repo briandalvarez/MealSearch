@@ -13,15 +13,15 @@ import Foundation
 // Identifiable protocol uses the id property below to give each recipe a unique identity
 // Hashable protocol allows recipes to be stored in sets so they can easily be compared or updated
 
-struct RecipeSummary: Decodable, Identifiable, Hashable {
+struct RecipeModel: Decodable, Identifiable, Hashable {
     // Required details for each recipe
     // Based on the spoonacular API's JSON key-value pair names in documentation
     let id: Int
     let title: String
-    let image: String
+    let image: String?
     
-    let readyInMinutes: Int
-    let servings: Int
+    let readyInMinutes: Int?
+    let servings: Int?
     
     let usedIngredientCount: Int?
     let missedIngredientCount: Int?

@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct IngredientSummary: Decodable, Identifiable, Hashable {
+struct IngredientModel: Decodable, Identifiable, Hashable {
     let id: Int
     let name: String
     let original: String

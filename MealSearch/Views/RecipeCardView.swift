@@ -8,23 +8,19 @@
 import SwiftUI
 
 struct RecipeCardView: View {
-    let recipe: RecipeSummary
+    let recipe: RecipeModel
     
     var body: some View {
         HStack(spacing: 12) {
             
-            AsyncImage(url: URL(string: recipe.image)) { image in
-                image
-                    .resizable()
-                    .scaledToFill()
-            } placeholder: {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.white)
-                        .overlay(
-                            Image(systemName: "photo")
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                        )
+            AsyncImage(url: URL(string: recipe.image ?? "")) { phase in
+                if let image = phase.image {
+                    image
+                        .resizable()
+                        .scaledToFill()
+                } else {
+                    placeholder
+                }
             }
             .frame(width: 80, height: 90)
             .clipShape(RoundedRectangle(cornerRadius: 10))
@@ -38,13 +34,14 @@ struct RecipeCardView: View {
                     .frame(maxWidth: 180, alignment: .leading)
                 
                 HStack(spacing: 10) {
-                    if recipe.readyInMinutes >= 0 {
-                        Label("\(recipe.readyInMinutes) min", systemImage: "clock")
+                    if (recipe.readyInMinutes ?? 0) >= 0 {
+                        Label("\(recipe.readyInMinutes ?? 0) min", systemImage: "clock")
                     }
-                    if recipe.servings >= 0 {
-                        Label("\(recipe.servings) serving\(recipe.servings == 1 ? "" : "s")", systemImage: "person.2")
+                    if (recipe.servings ?? 0) >= 0 {
+                        let s = recipe.servings ?? 0
+                        Label("\(s) serving\(s == 1 ? "" : "s")", systemImage: "person.2")
                     }
-                    }
+                }
                 .font(.caption)
                 .foregroundColor(.gray)
                 .frame(maxWidth: 187, alignment: .leading)
@@ -66,6 +63,16 @@ struct RecipeCardView: View {
                 .padding(.trailing, 16),
             alignment: .topTrailing
         )
+    }
+    
+    private var placeholder: some View {
+        RoundedRectangle(cornerRadius: 10)
+            .fill(Color.gray.opacity(0.2))
+            .overlay(
+                Image(systemName: "photo")
+                    .font(.system(size: 24))
+                    .foregroundColor(.gray.opacity(0.6))
+            )
     }
 }
 
@@ -100,7 +107,7 @@ struct IngredientWheel: View {
 
 #Preview {
     RecipeCardView(
-        recipe: RecipeSummary(
+        recipe: RecipeModel (
             id: 9003,
             title: "Quinoa and Chickpea Salad with Sun-Dried Tomatoes and Dried Cherries",
             image: "https://img.spoonacular.com/recipes/716004-312x231.jpg",

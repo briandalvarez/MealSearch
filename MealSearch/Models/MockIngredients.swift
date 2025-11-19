@@ -9,8 +9,8 @@ import Foundation
 
 enum MockIngredients {
     
-    static let pantry: [IngredientSummary] = [
-        IngredientSummary(
+    static let pantry: [IngredientModel] = [
+        IngredientModel(
             id: 9003,
             name: "apple",
             original: "4 apples",
@@ -19,7 +19,7 @@ enum MockIngredients {
             unit: "pieces",
             aisle: "Produce"
         ),
-        IngredientSummary(
+        IngredientModel(
             id: 20080,
             name: "whole wheat flour",
             original: "1 kg whole wheat flour",
@@ -28,7 +28,7 @@ enum MockIngredients {
             unit: "kg",
             aisle: "Baking"
         ),
-        IngredientSummary(
+        IngredientModel(
             id: 1123,
             name: "egg",
             original: "1 dozen eggs",
@@ -37,7 +37,7 @@ enum MockIngredients {
             unit: "",
             aisle: "Milk, Eggs, Other Dairy"
         ),
-        IngredientSummary(
+        IngredientModel(
             id: 19296,
             name: "honey",
             original: "1/2 cup honey",
@@ -46,7 +46,7 @@ enum MockIngredients {
             unit: "cup",
             aisle: "Nut butters, Jams, and Honey"
         ),
-        IngredientSummary(
+        IngredientModel(
             id: 2047,
             name: "salt",
             original: "1 tablespoon salt",
@@ -57,5 +57,5 @@ enum MockIngredients {
         )
     ]
     
-    static let sample: IngredientSummary = pantry[0]
+    static let sample: IngredientModel = pantry[0]
 }
