@@ -11,6 +11,7 @@ struct RecipeDetailsView: View {
     let recipeSummary: RecipeModel
     let details: RecipeDetailsModel
     
+    @Binding var isTabBarHidden: Bool
     @State private var selectedPage = 0
     @State private var isFavorite = false
     
@@ -56,7 +57,12 @@ struct RecipeDetailsView: View {
         .toolbarBackground(Color(.secondaryPink), for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
-        .tint(.white)
+        .onAppear {
+            isTabBarHidden = true
+        }
+        .onDisappear {
+            isTabBarHidden = false
+        }
     }
     
 
@@ -230,7 +236,8 @@ struct RecipeDetailsView: View {
     NavigationStack {
         RecipeDetailsView(
             recipeSummary: MockRecipes.all.first!,
-            details: MockRecipeDetails.sample
+            details: MockRecipeDetails.sample,
+            isTabBarHidden: .constant(false)
         )
     }
 }
