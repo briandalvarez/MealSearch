@@ -32,9 +32,7 @@ struct SearchView: View {
                         LazyVStack(spacing: 12) {
                             ForEach(recipes) { recipe in
                                 NavigationLink {
-                                    Text(recipe.title)
-                                        .font(.title2)
-                                        .padding()
+                                    RecipeDetailsView(recipeSummary: recipe, details: MockRecipeDetails.sample)
                                 } label: {
                                     RecipeCardView(recipe: recipe)
                                 }

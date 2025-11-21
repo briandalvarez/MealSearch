@@ -21,7 +21,7 @@ struct RecipeModel: Decodable, Identifiable, Hashable {
     let image: String?
     
     let readyInMinutes: Int?
-    let servings: Int?
+    let servings: Int? 
     
     let usedIngredientCount: Int?
     let missedIngredientCount: Int?

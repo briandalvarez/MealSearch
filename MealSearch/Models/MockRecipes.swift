@@ -22,7 +22,7 @@ enum MockRecipes {
     static let all: [RecipeModel] = [
         RecipeModel (
             id: 1095878,
-            title: "Muesli Cookies",
+            title: "Asparagus and Pea Soup: Real Convenience Food",
             image: "https://img.spoonacular.com/recipes/1095878-312x231.jpg",
             readyInMinutes: 30,
             servings: 8,

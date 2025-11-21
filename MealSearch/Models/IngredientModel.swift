@@ -15,6 +15,5 @@ struct IngredientModel: Decodable, Identifiable, Hashable {
     
     let amount: Double?
     let unit: String?
-    let aisle: String? 
-    
+    let aisle: String?
 }

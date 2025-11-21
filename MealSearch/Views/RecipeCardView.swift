@@ -84,7 +84,7 @@ struct FavoriteButton: View {
             isFavorite.toggle()
         } label: {
             Image(systemName: isFavorite ? "star.circle.fill" : "star.circle")
-                .foregroundColor(isFavorite ? .red : .gray)
+                .foregroundColor(isFavorite ? .starYellow : .gray)
                 .font(.system(size: 40, weight: .light))
                 .frame(width: 44, height: 44)
         }
