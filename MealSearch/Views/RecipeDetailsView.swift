@@ -101,7 +101,20 @@ struct RecipeDetailsView: View {
                     }
                 }
                 .font(.subheadline)
-                .foregroundColor(.secondary)
+                .foregroundColor(.gray)
+                
+                if let healthScore = details.healthScore {
+                    VStack(alignment: .center, spacing: 6) {
+                        Text("Health score: \(Int(healthScore.rounded()))")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        
+                        ProgressView(value: healthScore, total: 100)
+                            .progressViewStyle(.linear)
+                            .tint(healthBarColor(for:healthScore))
+                            .frame(width: 200, height: 8)
+                    }
+                }
                 
                 if let summaryHTML = details.summary, !summaryHTML.isEmpty {
                     Text(
@@ -220,6 +233,7 @@ struct RecipeDetailsView: View {
         }
     }
     
+    // Helper function for image placeholder for when a recipe does not have an image
     private var placeholder: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 16)
@@ -229,6 +243,15 @@ struct RecipeDetailsView: View {
                 .font(.largeTitle)
                 .foregroundColor(.gray.opacity(0.6))
         }
+    }
+}
+    
+    // Helper function for health score bar colors
+private func healthBarColor(for healthScore: Double) -> Color {
+    switch healthScore {
+    case ..<40: return .red
+    case 40..<70: return .yellow
+    default: return .green
     }
 }
 

@@ -63,6 +63,7 @@ struct MockRecipeDetails {
             "Reduce heat and simmer for 20 minutes until the lentils soften.",
             "Stir in shredded chicken and parsley. Cook 5 more minutes.",
             "Serve hot and enjoy!"
-        ]
+        ],
+        healthScore: 85.0
     )
 }

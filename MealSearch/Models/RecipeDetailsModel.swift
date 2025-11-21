@@ -18,5 +18,5 @@ struct RecipeDetailsModel: Decodable, Identifiable {
     
     let summary: String?
     let instructions: [String]
-    
+    let healthScore: Double? 
 }

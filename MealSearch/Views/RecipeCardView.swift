@@ -65,6 +65,7 @@ struct RecipeCardView: View {
         )
     }
     
+    // Helper function for image placeholder for when a recipe does not have an image
     private var placeholder: some View {
         RoundedRectangle(cornerRadius: 10)
             .fill(Color.gray.opacity(0.2))
