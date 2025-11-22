@@ -44,7 +44,7 @@ struct CustomTabBar: View {
         (icon: "star.fill", title: "Favorites", tag: 2)
     ]
     var body: some View {
-        VStack(spacing: 1) {
+        VStack(spacing: 1) {	
             Divider()
             
             HStack(spacing: 0) {
