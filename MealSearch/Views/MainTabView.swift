@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct MainTabView: View {
-    @State private var selectedTab: Int = 1
+    @State private var selectedTab: Int = 0
     
     init() {
         UITabBar.appearance().isHidden = true
@@ -41,7 +41,7 @@ struct CustomTabBar: View {
         (icon: "star.fill", title: "Favorites", tag: 2)
     ]
     var body: some View {
-        VStack(spacing: 1) {
+        VStack(spacing: 1) {	
             Divider()
             
             HStack(spacing: 0) {

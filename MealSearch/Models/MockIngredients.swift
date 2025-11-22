@@ -54,6 +54,14 @@ enum MockIngredients {
             amount: 1.0,
             unit: "tbsp",
             aisle: "Spices and Seasonings"
+        ),
+        
+        // Ingredients fetched from ingredient search endpoint
+        IngredientModel(
+            id: 19335,
+            name: "sugar",
+            image: "sugar-in-bowl.png",
+            aisle: "Baking",
         )
     ]
     

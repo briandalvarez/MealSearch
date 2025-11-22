@@ -9,12 +9,18 @@ import Foundation
 
 struct IngredientModel: Decodable, Identifiable, Hashable {
     let id: Int
-    let name: String
-    let original: String
-    let image: String?
+    var name: String
+    var original: String = ""
+    let image: String
     
-    let amount: Double?
-    let unit: String?
-    let aisle: String? 
-    
+    var formattedImage: String {
+        !image.contains("spoonacular")
+            ? "https://img.spoonacular.com/ingredients_100x100/\(image)"
+            : image
+    }
+
+    var amount: Double? = 0.0
+    var unit: String? = ""
+    let aisle: String
+
 }
