@@ -7,13 +7,16 @@
 
 import Foundation
 
-struct RecipeDetails: Decodable, Identifiable {
+struct RecipeDetailsModel: Decodable, Identifiable {
     let id: Int
     let title: String
     let image: String?
-    let summary: String?
     let readyInMinutes: Int?
     let servings: Int?
+    
     let extendedIngredients: [IngredientModel]
-    let instructions: String?
+    
+    let summary: String?
+    let instructions: [String]
+    let healthScore: Double? 
 }

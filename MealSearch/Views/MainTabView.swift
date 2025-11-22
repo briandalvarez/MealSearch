@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct MainTabView: View {
-    @State private var selectedTab: Int = 0
+    @State private var selectedTab: Int = 1
+    @State private var isTabBarHidden = false
     
     init() {
         UITabBar.appearance().isHidden = true
@@ -21,13 +22,15 @@ struct MainTabView: View {
                 IngredientsView()
                     .tag(0)
                 
-                SearchView()
+                SearchView(isTabBarHidden: $isTabBarHidden)
                     .tag(1)
                 
                 FavoritesView()
                     .tag(2)
             }
-            CustomTabBar(selectedTab: $selectedTab)
+            if !isTabBarHidden {
+                CustomTabBar(selectedTab: $selectedTab)
+            }
         }
     }
 }

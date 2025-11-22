@@ -65,6 +65,7 @@ struct RecipeCardView: View {
         )
     }
     
+    // Helper function for image placeholder for when a recipe does not have an image
     private var placeholder: some View {
         RoundedRectangle(cornerRadius: 10)
             .fill(Color.gray.opacity(0.2))
@@ -84,7 +85,7 @@ struct FavoriteButton: View {
             isFavorite.toggle()
         } label: {
             Image(systemName: isFavorite ? "star.circle.fill" : "star.circle")
-                .foregroundColor(isFavorite ? .red : .gray)
+                .foregroundColor(isFavorite ? .starYellow : .gray)
                 .font(.system(size: 40, weight: .light))
                 .frame(width: 44, height: 44)
         }

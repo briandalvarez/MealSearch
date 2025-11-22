@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SearchView: View {
+    @Binding var isTabBarHidden: Bool
     @State private var recipes: [RecipeModel] = MockRecipes.all
     
     var body: some View {
@@ -32,9 +33,13 @@ struct SearchView: View {
                         LazyVStack(spacing: 12) {
                             ForEach(recipes) { recipe in
                                 NavigationLink {
-                                    Text(recipe.title)
-                                        .font(.title2)
-                                        .padding()
+                                    RecipeDetailsView(
+                                        recipeSummary: recipe,
+                                        details: MockRecipeDetails.sample,
+                                        isTabBarHidden: $isTabBarHidden
+                                    )
+                                    .onAppear { isTabBarHidden = true }
+                                    .onDisappear { isTabBarHidden = false }
                                 } label: {
                                     RecipeCardView(recipe: recipe)
                                 }
@@ -53,5 +58,5 @@ struct SearchView: View {
 }
 
 #Preview {
-    SearchView()
+    SearchView(isTabBarHidden: .constant(false))
 }
