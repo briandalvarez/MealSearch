@@ -62,6 +62,30 @@ enum MockIngredients {
             name: "sugar",
             image: "sugar-in-bowl.png",
             aisle: "Baking",
+        ),
+        IngredientModel(
+            id: 4582,
+            name: "cooking oil",
+            image: "vegetable-oil.jpg",
+            aisle: "Oil, Vinegar, Salad Dressing"
+        ),
+        IngredientModel(
+            id: 20444,
+            name: "rice",
+            image: "uncooked-white-rice.png",
+            aisle: "Pasta and Rice"
+        ),
+        IngredientModel(
+            id: 1041009,
+            name: "cheese",
+            image: "cheddar-cheese.png",
+            aisle: "Cheese"
+        ),
+        IngredientModel(
+            id: 1077,
+            name: "milk",
+            image: "milk.png",
+            aisle: "Milk, Eggs, Other Dairy"
         )
     ]
     

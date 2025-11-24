@@ -75,4 +75,5 @@ struct CustomTabBar: View {
 
 #Preview {
     MainTabView()
+        .environmentObject(IngredientTabStore())
 }

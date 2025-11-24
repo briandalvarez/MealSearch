@@ -10,9 +10,12 @@ import UIKit
 
 @main
 struct MealSearchApp: App {
+    @StateObject private var tabStore = IngredientTabStore()
+    
     var body: some Scene {
         WindowGroup {
             MainTabView()
+                .environmentObject(tabStore)
         }
     }
 }

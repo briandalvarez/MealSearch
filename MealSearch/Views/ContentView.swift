@@ -16,7 +16,7 @@ struct ContentView: View {
             .padding()
             .task {
                 print("Testing recipe information…")
-                await testRecipeInformation()
+//                await testRecipeInformation()
                 print("Done testing recipe information")
             }
     }

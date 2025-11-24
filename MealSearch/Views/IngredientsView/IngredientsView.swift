@@ -14,12 +14,28 @@ struct IngredientTab: Identifiable {
     var list: IngredientListModel
 }
 
-struct IngredientsView: View {
-    @State private var selectedTab: Int = 0    
-    @State private var tabs = [
+class IngredientTabStore: ObservableObject {
+    @Published var tabs: [IngredientTab] = [
         IngredientTab(id: 0, icon: "archivebox.fill", title: "My Pantry", list: IngredientListModel(id: 0, ingredients: [])),
         IngredientTab(id: 1, icon: "cart.fill", title: "Shopping List", list: IngredientListModel(id: 1, ingredients: [])),
     ]
+    
+    func ingredientExistsAt(ingredientName: String) -> Int {
+        for tab in tabs {
+            for item in tab.list.ingredients {
+                if item.name == ingredientName {
+                    return tab.id
+                }
+            }
+        }
+        return -1
+    }
+}
+
+
+struct IngredientsView: View {
+    @EnvironmentObject var tabStore: IngredientTabStore
+    @State private var selectedTab: Int = 0
     
     init() {
         UITabBar.appearance().isHidden = true
@@ -29,14 +45,14 @@ struct IngredientsView: View {
         ZStack() {
             VStack(spacing: 0) {
                 VStack() {
-                    SearchBar(tabs: $tabs)
-                    CustomIngredientsBar(selectedTab: $selectedTab, tabs: $tabs)
+                    SearchBar()
+                    CustomIngredientsBar(selectedTab: $selectedTab)
                 }
                 .padding(.top, 10)
                 .background(Color("PrimaryRed"))
                 
                 TabView(selection: $selectedTab) {
-                    ForEach($tabs) {
+                    ForEach($tabStore.tabs) {
                         $tab in
                         IngredientList(list: $tab.list)
                             .tag(tab.id)
@@ -48,13 +64,13 @@ struct IngredientsView: View {
 }
 
 struct CustomIngredientsBar: View {
+    @EnvironmentObject var tabStore: IngredientTabStore
     @Binding var selectedTab: Int
-    @Binding var tabs: [IngredientTab]
     
     var body: some View {
         ZStack {
             HStack(spacing: 0) {
-                ForEach(tabs, id: \.id) {
+                ForEach(tabStore.tabs, id: \.id) {
                     tab in
                     Button(action: {selectedTab = tab.id}) {
                         HStack(spacing: 4) {
@@ -89,4 +105,5 @@ struct CustomIngredientsBar: View {
 
 #Preview {
     IngredientsView()
+        .environmentObject(IngredientTabStore())
 }
