@@ -1,5 +1,10 @@
 
 .DS_Store
-*.xcodeproj/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+xcuserdata/
 DerivedData/
+
 
