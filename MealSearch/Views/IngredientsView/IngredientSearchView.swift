@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 struct SearchBar: View {
-    @Binding var tabs: [IngredientTab]
+    @EnvironmentObject var tabStore: IngredientTabStore
     @State private var searchQuery: String = ""
     @State private var showingPopover: Bool = false
     
@@ -29,15 +29,14 @@ struct SearchBar: View {
                 .padding(.leading, 10)
             }
             .buttonStyle(.plain)
-//            .padding(.leading, 10)
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity)
             .background {
                 RoundedRectangle(cornerRadius: 10)
                     .fill(.backgroundCream)
             }
-            .popover(isPresented: $showingPopover, attachmentAnchor: .point(.center), arrowEdge: .bottom) {
-                SearchPopover(tabs: $tabs, showingPopover: $showingPopover)
+            .sheet(isPresented: $showingPopover) {
+                SearchPopover(showingPopover: $showingPopover)
             }
         }
         .zIndex(1)
@@ -48,22 +47,23 @@ struct SearchBar: View {
 }
 
 struct SearchPopover: View {
-    @Binding var tabs: [IngredientTab]
+    @EnvironmentObject var tabStore: IngredientTabStore
     @Binding var showingPopover: Bool
+    @State private var showingAdvancedSearch: Bool = false
     @State private var selectedIngredient: IngredientModel?
     @State private var selectedTab: Int = -1
-    
+    @State private var searchQuery: String = ""
+        
     @State private var defaultIngredients: [IngredientModel] = MockIngredients.pantry
+    @State private var filteredIngredients: [IngredientModel] = MockIngredients.pantry
     
-    func ingredientExists(_ ingredient: String) -> Bool {
-        for tab in tabs {
-            for item in tab.list.ingredients {
-                if item.name == ingredient {
-                    return true
-                }
-            }
+    let spoonacularAPI = APIHandler()
+    @State private var isLoading = false
+    
+    func filterIngredients() -> Void {
+        filteredIngredients = filteredIngredients.filter {
+            $0.name.lowercased().contains(searchQuery.lowercased())
         }
-        return false
     }
     
     var body: some View {
@@ -80,57 +80,169 @@ struct SearchPopover: View {
             .padding(.vertical, 30)
             .padding(.horizontal, 10)
             
-            List {
-                ForEach($defaultIngredients, id: \.id) {
-                    ingredient in
+            // Actual search bar
+            HStack {
+                Image(systemName: "magnifyingglass.circle.fill")
+                    .font(.title)
+                TextField(text: $searchQuery) {
+                    Text("Type ingredient here")
+                        .foregroundStyle(.white)
+                }
+                .onChange(of: searchQuery, initial: false) {
+                    oldVal, newVal in
+                    if newVal.trimmingCharacters(in: .whitespacesAndNewlines) == "" {
+                        filteredIngredients = defaultIngredients
+                        showingAdvancedSearch = false
+                    } else {
+                        filterIngredients()
+                        showingAdvancedSearch = true
+                    }
+                }
+                Spacer()
+            }
+            .foregroundStyle(.white)
+            .padding(.leading, 10)
+            .padding(.vertical, 20)
+            .frame(maxWidth: .infinity)
+            .background {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(.primaryRed)
+            }
+            .shadow(color: .black.opacity(0.4), radius: 4, y: 2)
+            .padding(.horizontal, 10)
+            .padding(.bottom, 30)
+            
+            // Advanced search (calls spoonacular API for ingredients)
+            if (showingAdvancedSearch) {
+                Button {
+                    isLoading = true
+                    Task {
+                        filteredIngredients = await spoonacularAPI.fetchIngredients(of: searchQuery)
+                        isLoading = false
+                    }
+                } label: {
                     HStack {
-                        Text(ingredient.wrappedValue.name)
-                        Spacer()
-                        Button {
-                            selectedIngredient = ingredient.wrappedValue
-                        } label: {
-                            Image(systemName: ingredientExists(ingredient.wrappedValue.name)
-                                  ? "checkmark.app.fill"
-                                  : "plus.app")
-                            .foregroundStyle(.green)
-                            .font(.title)
-                        }
-                        .sheet(item: $selectedIngredient) {
-                            ingredient in
-                            SearchPopoverSelection(
-                                tabs: $tabs,
-                                ingredient: ingredient
-                            )
+                        VStack {
+                            Text("Couldn't find your ingredient?")
+                                .font(.headline)
+                                .fontWeight(.bold)
+                                .padding(.bottom, 5)
+                            Text("Tap here to see more suggestions \n based on your search")
+                                .font(.caption)
+                                .foregroundStyle(Color(red: 0.827, green: 0.827, blue: 0.827))
+                                .underline()
+                                .multilineTextAlignment(.center)
                         }
                         
+                        Spacer()
+                        
+                        Image(systemName: "moon.stars.fill")
+                            .font(.largeTitle)
+                            .foregroundStyle(.white)
+                            .scaleEffect(1.2)
                     }
-                    .padding(.vertical, 10)
+                    .padding(.horizontal, 10)
                 }
+                .disabled(isLoading)
+                .buttonStyle(.plain)
+                .padding(.vertical, 20)
+                .padding(.horizontal, 10)
+                .background {
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(.primaryRed)
+                }
+                .foregroundStyle(.white)
+                
             }
-            .listStyle(.plain)
+            
+            
+            VStack {
+                if !showingAdvancedSearch {
+                    Text("Here are some suggestions:")
+                }
+                
+                if isLoading {
+                    ProgressView()
+                        .padding(50)
+                        .controlSize(.large)
+                }
+                
+                List {
+                    ForEach($filteredIngredients, id: \.id) {
+                        ingredient in
+                        
+                        let ingredientFoundAt = tabStore.ingredientExistsAt(ingredientName: ingredient.wrappedValue.name)
+                        
+                        HStack {
+                            Text(ingredient.wrappedValue.name.capitalized)
+                            Spacer()
+                            Button {
+                                selectedIngredient = ingredient.wrappedValue
+                            } label: {
+                                Image(systemName: ingredientFoundAt > -1
+                                      ? tabStore.tabs[ingredientFoundAt].icon
+                                      : "plus.app")
+                                .foregroundStyle(.green)
+                                .font(.title)
+                                .overlay(
+                                    ZStack {
+                                        if ingredientFoundAt > -1 {
+                                            Image(systemName: "checkmark")
+                                        }
+                                    }
+                                        .offset(x: -30)
+                                        .foregroundStyle(.green)
+                                )
+                            }
+                        }
+                        .padding(.vertical, 10)
+                    }
+                }
+                .listStyle(.plain)
+                .padding(.top, 20)
+            }
             
         }
         .padding(.horizontal, 20)
         .background(.backgroundCream)
+        .sheet(item: $selectedIngredient) {
+            ingredient in
+            SearchPopoverSelection(
+                ingredient: ingredient,
+                foundAt: tabStore.ingredientExistsAt(ingredientName: ingredient.name)
+            )
+        }
     }
 }
 
 struct SearchPopoverSelection: View {
-    @Binding var tabs: [IngredientTab]
+    @EnvironmentObject var tabStore: IngredientTabStore
     @State private var selectedTab: Int = 0
+    @Environment(\.dismiss) private var closeSelection
     let ingredient: IngredientModel
+    let foundAt: Int
     
-    func addIngredient(_ item: IngredientModel) -> Void {
-        tabs[selectedTab].list.ingredients.append(item)
+    func addOrMoveIngredient(_ item: IngredientModel) -> Void {
+        if foundAt > -1 {
+            tabStore.tabs[foundAt].list.removeIngredient(item)
+        }
+        if selectedTab != -1 {
+            tabStore.tabs[selectedTab].list.addIngredient(item)
+        }
     }
     
     var body: some View {
         VStack {
-            Text("Add \(ingredient.name) to:")
+            let addOrMove = foundAt > -1 ? "Move" : "Add"
+            Text("\(addOrMove) \(ingredient.name) to:")
                 .font(.system(size: 30))
                 .padding(.top, 35)
             Picker("Tab", selection: $selectedTab) {
-                ForEach(tabs, id: \.id) {
+                Text("Remove from list")
+                    .font(.title2)
+                    .foregroundStyle(.primaryRed)
+                    .tag(-1)
+                ForEach(tabStore.tabs, id: \.id) {
                     tab in
                     Text(tab.title)
                         .font(.title2)
@@ -141,10 +253,11 @@ struct SearchPopoverSelection: View {
             .pickerStyle(.wheel)
             
             Button {
-                addIngredient(ingredient)
+                addOrMoveIngredient(ingredient)
+                closeSelection()
             } label: {
                 HStack {
-                    Text("Add")
+                    Text("Confirm")
                     Image(systemName: "plus")
                 }
                 .font(.title)
