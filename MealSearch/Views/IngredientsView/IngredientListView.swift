@@ -45,7 +45,7 @@ struct IngredientList: View {
                             VStack(alignment: .leading){
                                 Text(ingredient.name.capitalized)
                                     .font(.headline)
-                                Text(ingredient.aisle)
+                                Text(ingredient.aisle ?? "Other")
                                     .font(.caption)
                             }
                             

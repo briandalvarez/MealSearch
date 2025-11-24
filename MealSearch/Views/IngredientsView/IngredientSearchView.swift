@@ -57,7 +57,7 @@ struct SearchPopover: View {
     @State private var defaultIngredients: [IngredientModel] = MockIngredients.pantry
     @State private var filteredIngredients: [IngredientModel] = MockIngredients.pantry
     
-    let spoonacularAPI = APIHandler()
+    let spoonacularAPI = APIHandler.shared
     @State private var isLoading = false
     
     func filterIngredients() -> Void {
