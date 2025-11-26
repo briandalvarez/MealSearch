@@ -9,7 +9,10 @@ import SwiftUI
 
 struct SearchView: View {
     @Binding var isTabBarHidden: Bool
-    @State private var recipes: [RecipeModel] = MockRecipes.all
+    @EnvironmentObject var tabStore: IngredientTabStore
+    
+    @State private var recipes: [RecipeModel] = []
+    @State private var isLoading = false
     
     var body: some View {
         NavigationStack {
@@ -17,18 +20,47 @@ struct SearchView: View {
                 Color("BackgroundCream")
                     .ignoresSafeArea()
                 
-                if recipes.isEmpty {
-                    VStack(spacing: 16) {
-                        Text("No Recipes Found")
-                            .font(.system(size: 24, weight: .semibold))
+                if isLoading {
+                    VStack(spacing: 12) {
+                        ProgressView()
+                        Text("Searching recipes...")
+                            .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(.gray)
+                            .multilineTextAlignment(.center)
                             .padding(.horizontal, 24)
-                        
-                        Image(systemName: "exclamationmark.magnifyingglass")
-                            .font(.system(size: 60))
-                            .foregroundColor(.gray.opacity(0.7))
                     }
-                } else {
+                    .frame(maxHeight: .infinity, alignment: .top)
+                    .padding(.top, 120)
+                } else if recipes.isEmpty {
+                    let pantry = tabStore.tabs[0].list.ingredients
+                    
+                    VStack(spacing: 16) {
+                        if pantry.isEmpty {
+                            Text("Add Ingredients to My Pantry to Find Recipes")
+                                .font(.system(size: 24, weight: .semibold))
+                                .foregroundColor(.gray)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 24)
+                            
+                            Image(systemName: "archivebox")
+                                .font(.system(size: 60))
+                                .foregroundColor(.gray.opacity(0.7))
+                        }
+                        else {
+                            Text("No Recipes Found")
+                                .font(.system(size: 24, weight: .semibold))
+                                .foregroundColor(.gray)
+                                .padding(.horizontal, 24)
+                            
+                            Image(systemName: "exclamationmark.magnifyingglass")
+                                .font(.system(size: 60))
+                                .foregroundColor(.gray.opacity(0.7))
+                        }
+                    }
+                    .frame(maxHeight: .infinity, alignment: .top)
+                    .padding(.top, 130)
+                }
+                else {
                     ScrollView {
                         LazyVStack(spacing: 12) {
                             ForEach(recipes) { recipe in
@@ -54,9 +86,30 @@ struct SearchView: View {
             }
             .navigationBarTitle("Meal Search", displayMode: .large)
         }
+        .task {
+            await loadRecipesFromAPI()
+        }
+    }
+
+    private func loadRecipesFromAPI() async {
+        let pantryIngredients = tabStore.tabs[0].list.ingredients
+        
+        if pantryIngredients.isEmpty {
+            recipes = []
+            isLoading = false
+            return
+        }
+        
+        isLoading = true
+        
+        let result = await APIHandler.shared.searchRecipes(from: pantryIngredients, number: 20)
+        
+        recipes = result
+        isLoading = false
     }
 }
 
 #Preview {
     SearchView(isTabBarHidden: .constant(false))
+        .environmentObject(IngredientTabStore())
 }

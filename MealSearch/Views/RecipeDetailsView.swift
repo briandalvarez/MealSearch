@@ -54,7 +54,7 @@ struct RecipeDetailsView: View {
                 }
             }
         }
-        .toolbarBackground(Color(.secondaryPink), for: .navigationBar)
+        .toolbarBackground(Color(.primaryRed), for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
         .onAppear {
