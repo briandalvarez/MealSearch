@@ -18,12 +18,19 @@ class APIHandler {
     static let shared = APIHandler()
     private init() {}
     
-    private let apiKey = "9636eb8b5e6943c58a7d7836c73c9410"
-    private let baseURL = URL(string: "https://api.spoonacular.com")!
+    private let apiKey = "YMMAgaOOuGtAKlMv3AGfKDtSZKzYdiIE"
+    private let baseURL = URL(string: "https://api.apilayer.com/spoonacular")!
+    
+    private func makeRequest(url: URL) -> URLRequest {
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.addValue(apiKey, forHTTPHeaderField: "apikey")
+        return request
+    }
     
     // meal search screen
     func searchRecipes(ingredients: [String], number: Int = 10) async -> [RecipeModel] {
-        guard var components = URLComponents(url: baseURL.appendingPathComponent("/recipes/complexSearch"),
+        guard var components = URLComponents(url: baseURL.appendingPathComponent("recipes/complexSearch"),
                                              resolvingAgainstBaseURL: false
         ) else {
             print("Invalid URL")
@@ -31,7 +38,6 @@ class APIHandler {
         }
         
         var queryItems: [URLQueryItem] = [
-            URLQueryItem(name: "apiKey", value: apiKey),
             URLQueryItem(name: "number", value: String(number)),
             URLQueryItem(name: "addRecipeInformation", value: "true"),
             URLQueryItem(name: "fillIngredients", value: "true"),
@@ -50,8 +56,10 @@ class APIHandler {
             return []
         }
         
+        let request = makeRequest(url: url)
+        
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
+            let (data, _) = try await URLSession.shared.data(for: request)
             let decoded = try JSONDecoder().decode(ComplexSearchResponse.self, from: data)
             return decoded.results
         } catch {
@@ -68,7 +76,7 @@ class APIHandler {
     // recipe details screen
     
     func fetchRecipeDetails(id: Int) async -> RecipeDetailsModel? {
-        guard var components = URLComponents(url: baseURL.appendingPathComponent("/recipes/\(id)/information"),
+        guard var components = URLComponents(url: baseURL.appendingPathComponent("recipes/\(id)/information"),
                                              resolvingAgainstBaseURL: false
         ) else {
             print("Invalid URL")
@@ -76,7 +84,6 @@ class APIHandler {
         }
         
         components.queryItems = [
-            URLQueryItem(name: "apiKey", value: apiKey),
             URLQueryItem(name: "includeNutrition", value: "false")
         ]
         
@@ -85,8 +92,10 @@ class APIHandler {
             return nil
         }
         
+        let request = makeRequest(url: url)
+        
         do {
-            let(data, _) = try await URLSession.shared.data(from: url)
+            let(data, _) = try await URLSession.shared.data(for: request)
             let decoded = try JSONDecoder().decode(RecipeDetailsModel.self, from: data)
             return decoded
         } catch {
@@ -100,15 +109,30 @@ class APIHandler {
     func fetchIngredients(of ingredientName: String) async -> [IngredientModel] {
         var ingredients: [IngredientModel] = []
         
-        let urlString = "https://api.spoonacular.com/food/ingredients/search?query=\(ingredientName)&number=5&metaInformation=true&&apiKey=\(apiKey)"
-        
-        guard let url = URL(string: urlString) else {
+        guard var components = URLComponents(
+            url: baseURL.appendingPathComponent("food/ingredients/search"),
+            resolvingAgainstBaseURL: false
+        ) else {
             print("Invalid URL")
             return []
         }
+        
+        components.queryItems = [
+            URLQueryItem(name: "query", value: ingredientName),
+            URLQueryItem(name: "number", value: "5"),
+            URLQueryItem(name: "metaInformation", value: "true")
+        ]
+        
+        guard let url = components.url else {
+            print("Invalid URL")
+            return []
+        }
+        
+        let request = makeRequest(url: url)
+        
         do {
             // Fetch data from spoonacular API
-            let (data, _) = try await URLSession.shared.data(from: url)
+            let (data, _) = try await URLSession.shared.data(for: request)
 
             // Decode JSON into a dictionary
             let json = try JSONSerialization.jsonObject(with: data, options: [])
