@@ -30,7 +30,7 @@ struct SearchView: View {
                             .padding(.horizontal, 24)
                     }
                     .frame(maxHeight: .infinity, alignment: .top)
-                    .padding(.top, 120)
+                    .padding(.top, 140)
                 } else if recipes.isEmpty {
                     let pantry = tabStore.tabs[0].list.ingredients
                     
@@ -58,7 +58,7 @@ struct SearchView: View {
                         }
                     }
                     .frame(maxHeight: .infinity, alignment: .top)
-                    .padding(.top, 130)
+                    .padding(.top, 140)
                 }
                 else {
                     ScrollView {
@@ -67,7 +67,6 @@ struct SearchView: View {
                                 NavigationLink {
                                     RecipeDetailsView(
                                         recipeSummary: recipe,
-                                        details: MockRecipeDetails.sample,
                                         isTabBarHidden: $isTabBarHidden
                                     )
                                     .onAppear { isTabBarHidden = true }
@@ -102,7 +101,7 @@ struct SearchView: View {
         
         isLoading = true
         
-        let result = await APIHandler.shared.searchRecipes(from: pantryIngredients, number: 20)
+        let result = await APIHandler.shared.searchRecipes(from: pantryIngredients, number: 10)
         
         recipes = result
         isLoading = false

@@ -22,7 +22,7 @@ class APIHandler {
     private let baseURL = URL(string: "https://api.spoonacular.com")!
     
     // meal search screen
-    func searchRecipes(ingredients: [String], number: Int = 20) async -> [RecipeModel] {
+    func searchRecipes(ingredients: [String], number: Int = 10) async -> [RecipeModel] {
         guard var components = URLComponents(url: baseURL.appendingPathComponent("/recipes/complexSearch"),
                                              resolvingAgainstBaseURL: false
         ) else {
@@ -60,7 +60,7 @@ class APIHandler {
         }
     }
     
-    func searchRecipes(from pantry: [IngredientModel], number: Int = 20) async -> [RecipeModel] {
+    func searchRecipes(from pantry: [IngredientModel], number: Int = 10) async -> [RecipeModel] {
         let ingredientNames = pantry.map { $0.name }
         return await searchRecipes(ingredients: ingredientNames, number: number)
     }

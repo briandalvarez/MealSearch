@@ -9,29 +9,53 @@ import SwiftUI
 
 struct RecipeDetailsView: View {
     let recipeSummary: RecipeModel
-    let details: RecipeDetailsModel
     
     @Binding var isTabBarHidden: Bool
     @State private var selectedPage = 0
     @State private var isFavorite = false
+    
+    @State private var details: RecipeDetailsModel = MockRecipeDetails.sample
+    @State private var isLoading = false
+    @State private var errorMessage: String? = nil
     
     var body: some View {
         ZStack {
             Color(.white)
                 .ignoresSafeArea()
             
-            TabView(selection: $selectedPage) {
-                overviewPage
-                    .tag(0)
-                
-                ingredientsPage
-                    .tag(1)
-                
-                instructionsPage
-                    .tag(2)
+            if isLoading {
+                VStack(spacing: 12) {
+                    ProgressView()
+                    Text("Loading recipe...")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(.gray)
+                }
+            } else if let errorMessage = errorMessage {
+                VStack(spacing: 12) {
+                    Text("Something went wrong")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(.gray)
+                    
+                    Text(errorMessage)
+                        .font(.system(size: 16, weight: .regular))
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 24)
+                }
+            } else {
+                TabView(selection: $selectedPage) {
+                    overviewPage
+                        .tag(0)
+                    
+                    ingredientsPage
+                        .tag(1)
+                    
+                    instructionsPage
+                        .tag(2)
+                }
+                .tabViewStyle(.page)
+                .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
             }
-            .tabViewStyle(.page)
-            .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -62,6 +86,9 @@ struct RecipeDetailsView: View {
         }
         .onDisappear {
             isTabBarHidden = false
+        }
+        .task {
+            await loadDetails()
         }
     }
     
@@ -233,6 +260,22 @@ struct RecipeDetailsView: View {
         }
     }
     
+    private func loadDetails() async {
+        isLoading = true
+        errorMessage = nil
+        
+        let id = recipeSummary.id
+        
+        let fetchedDetails = await APIHandler.shared.fetchRecipeDetails(id: id)
+        
+        if let fetchedDetails = fetchedDetails {
+            details = fetchedDetails
+        } else {
+            errorMessage = "Failed to load recipe details."
+        }
+        isLoading = false
+    }
+    
     // Helper function for image placeholder for when a recipe does not have an image
     private var placeholder: some View {
         ZStack {
@@ -259,7 +302,6 @@ private func healthBarColor(for healthScore: Double) -> Color {
     NavigationStack {
         RecipeDetailsView(
             recipeSummary: MockRecipes.all.first!,
-            details: MockRecipeDetails.sample,
             isTabBarHidden: .constant(false)
         )
     }
