@@ -10,13 +10,11 @@ import SwiftUI
 class FavoriteStore: ObservableObject {
     @Published var favorites: [RecipeModel] = []
     
-    func add(_ recipe: RecipeModel) -> Void {
-        favorites.append(recipe)
-    }
-    
-    func remove(_ recipe: RecipeModel) -> Void {
-        favorites = favorites.filter {
-            $0.id != recipe.id
+    func toggle(_ recipe: RecipeModel) -> Void {
+        if self.contains(recipe) {
+            self.remove(recipe)
+        } else {
+            self.add(recipe)
         }
     }
     
@@ -25,6 +23,16 @@ class FavoriteStore: ObservableObject {
             $0.id == recipe.id
         }
     }
+    
+    private func add(_ recipe: RecipeModel) -> Void {
+        favorites.append(recipe)
+    }
+    
+    private func remove(_ recipe: RecipeModel) -> Void {
+        favorites = favorites.filter {
+            $0.id != recipe.id
+        }
+    }    
 }
 
 struct FavoritesView: View {

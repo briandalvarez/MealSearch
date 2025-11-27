@@ -87,11 +87,7 @@ struct FavoriteButton: View {
     
     var body: some View {
         Button {
-            if !isFavorite {
-                favoriteStore.add(recipe)
-            } else {
-                favoriteStore.remove(recipe)
-            }
+            favoriteStore.toggle(recipe)
         } label: {
             Image(systemName: isFavorite ? "star.circle.fill" : "star.circle")
                 .foregroundColor(isFavorite ? .starYellow : .gray)

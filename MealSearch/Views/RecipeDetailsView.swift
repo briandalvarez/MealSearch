@@ -14,7 +14,10 @@ struct RecipeDetailsView: View {
     
     @Binding var isTabBarHidden: Bool
     @State private var selectedPage = 0
-    @State private var isFavorite = false
+    
+    var isFavorite: Bool {
+        favoriteStore.contains(recipeSummary)
+    }
     
 //    @State private var details: RecipeDetailsModel = MockRecipeDetails.sample
     @State private var isLoading = false
@@ -71,7 +74,7 @@ struct RecipeDetailsView: View {
             
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
-                    isFavorite.toggle()
+                    favoriteStore.toggle(recipeSummary)
                 } label: {
                     Image(systemName: isFavorite ? "star.circle.fill" : "star.circle")
                         .font(.system(size: 25, weight: .light))
