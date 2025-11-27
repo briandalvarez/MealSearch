@@ -35,6 +35,8 @@ struct RecipeDetailsView: View {
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(.gray)
                 }
+                .frame(maxHeight: .infinity, alignment: .top)
+                .padding(.top, 140)
             } else if let errorMessage = errorMessage {
                 VStack(spacing: 12) {
                     Text("Something went wrong")
@@ -47,6 +49,8 @@ struct RecipeDetailsView: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 24)
                 }
+                .frame(maxHeight: .infinity, alignment: .top)
+                .padding(.top, 140)
             } else {
                 TabView(selection: $selectedPage) {
                     overviewPage
@@ -164,7 +168,7 @@ struct RecipeDetailsView: View {
                     Text("No description available for this recipe.")
                         .font(.body)
                         .foregroundColor(.gray.opacity(0.7))
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.horizontal)
                 }
                 
@@ -194,26 +198,23 @@ struct RecipeDetailsView: View {
                                     .fixedSize(horizontal: false, vertical: true)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.vertical, 14)
-                                
-                                // Placeholder for toggle buttons that will update ingredient count in My Pantry and Shopping List
-                                Button {
-                                    // Toggle logic will go here
-                                } label: {
-                                    Image(systemName: "circle")
-                                        .font(.system(size: 40, weight: .regular))
-                                        .foregroundColor(.red)
-                                }
-                                .frame(width: 54, height: 54, alignment: .center) 
-                                .contentShape(Rectangle())
                             }
                             
                             Divider()
                         }
                     }
+                    IngredientWheelView(matchFraction: recipeSummary.matchRatio, showsLabel: true, lineWidth: 12)
+                        .frame(width: 140, height: 140)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 16)
+                        .padding(.bottom, 8)
                 } else  {
-                    Text("No ingredient list available.")
+                    Text("No ingredient list available for this recipe.")
                         .font(.body)
                         .foregroundColor(.gray.opacity(0.7))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .frame(maxHeight: .infinity, alignment: .top)
+                        .padding(.top, 140)
                 }
                 
                 Spacer(minLength: 8)
@@ -261,8 +262,11 @@ struct RecipeDetailsView: View {
                         }
                     }
                 } else {
-                    Text("No instructions available.")
+                    Text("No instructions available for this recipe.")
                         .foregroundColor(.gray.opacity(0.7))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .frame(maxHeight: .infinity, alignment: .top)
+                        .padding(.top, 140)
                 }
                 
                 Spacer(minLength: 8)
@@ -275,11 +279,11 @@ struct RecipeDetailsView: View {
 //    private func loadDetails() async {
 //        isLoading = true
 //        errorMessage = nil
-//        
+//
 //        let id = recipeSummary.id
-//        
+//
 //        let fetchedDetails = await APIHandler.shared.fetchRecipeDetails(id: id)
-//        
+//
 //        if let fetchedDetails = fetchedDetails {
 //            details = fetchedDetails
 //        } else {
@@ -310,11 +314,13 @@ private func healthBarColor(for healthScore: Double) -> Color {
     }
 }
 
+
 #Preview {
     NavigationStack {
         RecipeDetailsView(
             recipeSummary: MockRecipes.all.first!,
             isTabBarHidden: .constant(false)
         )
+        .environmentObject(FavoriteStore())
     }
 }

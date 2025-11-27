@@ -2,8 +2,7 @@
 //  RecipeCardView.swift
 //  MealSearch
 //
-//  Created by Brian Alvarez on 11/14/25.
-//
+
 
 import SwiftUI
 
@@ -54,10 +53,12 @@ struct RecipeCardView: View {
         .cornerRadius(14)
         .shadow(color: .black.opacity(0.06), radius: 4, x: 0, y: 2)
         .overlay(
-            VStack {
+            VStack(spacing: 8) {
                 FavoriteButton(recipe: recipe)
-                Spacer()
-                IngredientWheel()
+                
+                IngredientWheelView(matchFraction: recipe.matchRatio,
+                                    showsLabel: false, lineWidth: 6)
+                .frame(width: 32, height: 32)
             }
                 .padding(.vertical, 10)
                 .padding(.trailing, 16),
@@ -97,20 +98,6 @@ struct FavoriteButton: View {
     }
 }
 
-// This is just a placeholder for the real ingredient wheel this needs to be updated later
-struct IngredientWheel: View {
-    var body: some View {
-        Button {
-            // Will later direct the user to the ingredient list
-        } label: {
-            Image(systemName: "ring")
-                .foregroundColor(.gray)
-                .font(.system(size: 34, weight: .light))
-                .frame(width: 44, height: 44)
-        }
-    }
-}
-
 #Preview {
     RecipeCardView(
         recipe: RecipeModel (
@@ -128,5 +115,6 @@ struct IngredientWheel: View {
 
         )
     )
+    .environmentObject(FavoriteStore())
     .padding(.horizontal, 16)
 }
