@@ -7,11 +7,40 @@
 
 import SwiftUI
 
+struct RecipeList: View {
+    @Binding var recipes: [RecipeModel]
+    @Binding var isTabBarHidden: Bool
+    
+    var body: some View {
+        ScrollView {
+            LazyVStack(spacing: 12) {
+                ForEach(recipes) { recipe in
+                    NavigationLink {
+                        RecipeDetailsView(
+                            recipeSummary: recipe,
+                            isTabBarHidden: $isTabBarHidden
+                        )
+                        .onAppear { isTabBarHidden = true }
+                        .onDisappear { isTabBarHidden = false }
+                    } label: {
+                        RecipeCardView(recipe: recipe)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+            .padding(.bottom, 24)
+        }
+    }
+}
+
 struct SearchView: View {
     @Binding var isTabBarHidden: Bool
     @EnvironmentObject var tabStore: IngredientTabStore
-    
+
     @State private var recipes: [RecipeModel] = []
+    @State private var prevIngredients: [IngredientModel] = []
     @State private var isLoading = false
     
     var body: some View {
@@ -61,26 +90,7 @@ struct SearchView: View {
                     .padding(.top, 140)
                 }
                 else {
-                    ScrollView {
-                        LazyVStack(spacing: 12) {
-                            ForEach(recipes) { recipe in
-                                NavigationLink {
-                                    RecipeDetailsView(
-                                        recipeSummary: recipe,
-                                        isTabBarHidden: $isTabBarHidden
-                                    )
-                                    .onAppear { isTabBarHidden = true }
-                                    .onDisappear { isTabBarHidden = false }
-                                } label: {
-                                    RecipeCardView(recipe: recipe)
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.top, 12)
-                        .padding(.bottom, 24)
-                    }
+                    RecipeList(recipes: $recipes, isTabBarHidden: $isTabBarHidden)
                 }
             }
             .navigationBarTitle("Meal Search", displayMode: .large)
@@ -99,11 +109,17 @@ struct SearchView: View {
             return
         }
         
+        // Don't fetch if recipes exist or ingredients haven't changed to minimize API calls
+        if !recipes.isEmpty && prevIngredients == pantryIngredients {
+            return
+        }
+        
         isLoading = true
         
         let result = await APIHandler.shared.searchRecipes(from: pantryIngredients, number: 10)
         
         recipes = result
+        prevIngredients = pantryIngredients
         isLoading = false
     }
 }

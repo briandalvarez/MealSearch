@@ -25,7 +25,7 @@ struct MainTabView: View {
                 SearchView(isTabBarHidden: $isTabBarHidden)
                     .tag(1)
                 
-                FavoritesView()
+                FavoritesView(isTabBarHidden: $isTabBarHidden)
                     .tag(2)
             }
             if !isTabBarHidden {
@@ -76,4 +76,5 @@ struct CustomTabBar: View {
 #Preview {
     MainTabView()
         .environmentObject(IngredientTabStore())
+        .environmentObject(FavoriteStore())
 }
