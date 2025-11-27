@@ -40,6 +40,7 @@ class APIHandler {
         var queryItems: [URLQueryItem] = [
             URLQueryItem(name: "number", value: String(number)),
             URLQueryItem(name: "addRecipeInformation", value: "true"),
+            URLQueryItem(name: "addRecipeInstructions", value: "true"),
             URLQueryItem(name: "fillIngredients", value: "true"),
             URLQueryItem(name: "sort", value: "max-used-ingredients")
         ]
@@ -61,6 +62,7 @@ class APIHandler {
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
             let decoded = try JSONDecoder().decode(ComplexSearchResponse.self, from: data)
+            print(decoded.results)
             return decoded.results
         } catch {
             print("Error fetching data: \(error.localizedDescription)")

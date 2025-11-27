@@ -8,13 +8,15 @@
 import SwiftUI
 
 struct RecipeDetailsView: View {
+    @EnvironmentObject var favoriteStore: FavoriteStore
+    
     let recipeSummary: RecipeModel
     
     @Binding var isTabBarHidden: Bool
     @State private var selectedPage = 0
     @State private var isFavorite = false
     
-    @State private var details: RecipeDetailsModel = MockRecipeDetails.sample
+//    @State private var details: RecipeDetailsModel = MockRecipeDetails.sample
     @State private var isLoading = false
     @State private var errorMessage: String? = nil
     
@@ -60,7 +62,7 @@ struct RecipeDetailsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                Text(details.title.isEmpty ? recipeSummary.title : details.title)
+                Text(recipeSummary.title)
                     .font(.headline)
                     .foregroundColor(.white)
                     .lineLimit(1)
@@ -88,7 +90,7 @@ struct RecipeDetailsView: View {
             isTabBarHidden = false
         }
         .task {
-            await loadDetails()
+//            await loadDetails()
         }
     }
     
@@ -97,7 +99,7 @@ struct RecipeDetailsView: View {
     private var overviewPage: some View {
         ScrollView {
             VStack(alignment: .center, spacing: 16) {
-                AsyncImage(url: URL(string: details.image ?? "")) { phase in
+                AsyncImage(url: URL(string: recipeSummary.image ?? "")) { phase in
                     if let image = phase.image {
                         image
                             .resizable()
@@ -110,7 +112,7 @@ struct RecipeDetailsView: View {
                 .clipped()
                 .cornerRadius(16)
                 
-                Text(details.title.isEmpty ? recipeSummary.title: details.title)
+                Text(recipeSummary.title)
                     .font(.largeTitle)
                     .bold()
                     .multilineTextAlignment(.center)
@@ -130,7 +132,7 @@ struct RecipeDetailsView: View {
                 .font(.subheadline)
                 .foregroundColor(.gray)
                 
-                if let healthScore = details.healthScore {
+                if let healthScore = recipeSummary.healthScore {
                     VStack(alignment: .center, spacing: 6) {
                         Text("Health score: \(Int(healthScore.rounded()))")
                             .font(.subheadline)
@@ -143,7 +145,7 @@ struct RecipeDetailsView: View {
                     }
                 }
                 
-                if let summaryHTML = details.summary, !summaryHTML.isEmpty {
+                if let summaryHTML = recipeSummary.summary, !summaryHTML.isEmpty {
                     Text(
                         summaryHTML
                             .replacingOccurrences(of: "<[^>]+>",
@@ -178,9 +180,9 @@ struct RecipeDetailsView: View {
                     .bold()
                     .padding(.bottom, 12)
                 
-                if !details.extendedIngredients.isEmpty {
+                if !recipeSummary.extendedIngredients.isEmpty {
                     VStack(spacing: 0) {
-                        ForEach(details.extendedIngredients) { ingredient in
+                        ForEach(recipeSummary.extendedIngredients) { ingredient in
                             HStack(alignment: .center, spacing: 16) {
                                 
                                 Text(ingredient.original.isEmpty ? ingredient.name : ingredient.original)
@@ -227,24 +229,31 @@ struct RecipeDetailsView: View {
                     .bold()
                     .padding(.bottom, 12)
                 
-                if !details.instructions.isEmpty {
+                if !recipeSummary.analyzedInstructions.isEmpty {
                     VStack(alignment: .leading, spacing: 10) {
-                        ForEach(details.instructions.indices, id: \.self) { index in
-                            HStack(alignment: .top, spacing: 10) {
-                                ZStack {
-                                    Circle()
-                                        .fill(Color(.secondaryPink).opacity(0.1))
-                                        .frame(width: 24, height: 24)
-                                    
-                                    Text("\(index + 1)")
-                                        .bold()
-                                        .foregroundColor(.primaryRed)
+                        ForEach(recipeSummary.analyzedInstructions, id: \.self) { instruction in
+                            
+                            Text(instruction.name ?? "")
+                            
+                            ForEach(instruction.steps, id: \.self) {
+                                step in
+                                
+                                HStack(alignment: .top, spacing: 10) {
+                                    ZStack {
+                                        Circle()
+                                            .fill(Color(.secondaryPink).opacity(0.1))
+                                            .frame(width: 24, height: 24)
+                                        
+                                        Text("\(step.number)")
+                                            .bold()
+                                            .foregroundColor(.primaryRed)
+                                    }
+                                    Text(step.step)
+                                        .foregroundColor(.black)
+                                        .multilineTextAlignment(.leading)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
                                 }
-                                Text(details.instructions[index])
-                                    .foregroundColor(.black)
-                                    .multilineTextAlignment(.leading)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
                             }
                         }
                     }
@@ -260,21 +269,21 @@ struct RecipeDetailsView: View {
         }
     }
     
-    private func loadDetails() async {
-        isLoading = true
-        errorMessage = nil
-        
-        let id = recipeSummary.id
-        
-        let fetchedDetails = await APIHandler.shared.fetchRecipeDetails(id: id)
-        
-        if let fetchedDetails = fetchedDetails {
-            details = fetchedDetails
-        } else {
-            errorMessage = "Failed to load recipe details."
-        }
-        isLoading = false
-    }
+//    private func loadDetails() async {
+//        isLoading = true
+//        errorMessage = nil
+//        
+//        let id = recipeSummary.id
+//        
+//        let fetchedDetails = await APIHandler.shared.fetchRecipeDetails(id: id)
+//        
+//        if let fetchedDetails = fetchedDetails {
+//            details = fetchedDetails
+//        } else {
+//            errorMessage = "Failed to load recipe details."
+//        }
+//        isLoading = false
+//    }
     
     // Helper function for image placeholder for when a recipe does not have an image
     private var placeholder: some View {

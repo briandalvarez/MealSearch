@@ -55,7 +55,7 @@ struct RecipeCardView: View {
         .shadow(color: .black.opacity(0.06), radius: 4, x: 0, y: 2)
         .overlay(
             VStack {
-                FavoriteButton()
+                FavoriteButton(recipe: recipe)
                 Spacer()
                 IngredientWheel()
             }
@@ -78,11 +78,20 @@ struct RecipeCardView: View {
 }
 
 struct FavoriteButton: View {
-    @State private var isFavorite = false
+    @EnvironmentObject var favoriteStore: FavoriteStore
+    let recipe: RecipeModel
+    
+    var isFavorite: Bool {
+        favoriteStore.contains(recipe)
+    }
     
     var body: some View {
         Button {
-            isFavorite.toggle()
+            if !isFavorite {
+                favoriteStore.add(recipe)
+            } else {
+                favoriteStore.remove(recipe)
+            }
         } label: {
             Image(systemName: isFavorite ? "star.circle.fill" : "star.circle")
                 .foregroundColor(isFavorite ? .starYellow : .gray)
@@ -115,7 +124,12 @@ struct IngredientWheel: View {
             readyInMinutes: 1500,
             servings: 100,
             usedIngredientCount: 3,
-            missedIngredientCount: 5
+            missedIngredientCount: 5,
+            summary: "",
+            healthScore: 0.0,
+            analyzedInstructions: [],
+            extendedIngredients: []
+
         )
     )
     .padding(.horizontal, 16)
