@@ -2,8 +2,7 @@
 //  IngredientSummary.swift
 //  MealSearch
 //
-//  Created by Brian Alvarez on 11/17/25.
-//
+
 
 import Foundation
 import SwiftData
@@ -17,9 +16,6 @@ class IngredientModel: Identifiable, Hashable, Decodable {
     var amount: Double?
     var unit: String?
     var aisle: String?
-    
-    @Relationship(inverse: nil)
-    var recipe: RecipeModel? = nil
     
     init(id: Int, name: String, original: String = "", image: String? = "", amount: Double? = 0.0, unit: String? = "", aisle: String? = "") {
         self.id = id
