@@ -6,36 +6,14 @@
 //
 
 import SwiftUI
-
-struct IngredientTab: Identifiable {
-    let id: Int
-    let icon: String
-    let title: String
-    var list: IngredientListModel
-}
-
-class IngredientTabStore: ObservableObject {
-    @Published var tabs: [IngredientTab] = [
-        IngredientTab(id: 0, icon: "archivebox.fill", title: "My Pantry", list: IngredientListModel(id: 0, ingredients: [])),
-        IngredientTab(id: 1, icon: "cart.fill", title: "Shopping List", list: IngredientListModel(id: 1, ingredients: [])),
-    ]
-    
-    func ingredientExistsAt(ingredientName: String) -> Int {
-        for tab in tabs {
-            for item in tab.list.ingredients {
-                if item.name == ingredientName {
-                    return tab.id
-                }
-            }
-        }
-        return -1
-    }
-}
-
+import SwiftData
 
 struct IngredientsView: View {
+    @Query private var lists: [IngredientListModel]
+    
     @EnvironmentObject var tabStore: IngredientTabStore
     @State private var selectedTab: Int = 0
+    @State private var loadedOnce = false
     
     init() {
         UITabBar.appearance().isHidden = true
@@ -51,11 +29,15 @@ struct IngredientsView: View {
                 .padding(.top, 10)
                 .background(Color("PrimaryRed"))
                 
-                TabView(selection: $selectedTab) {
-                    ForEach($tabStore.tabs) {
-                        $tab in
-                        IngredientList(list: $tab.list)
-                            .tag(tab.id)
+                if tabStore.tabs.isEmpty {
+                    Text("Loading…")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    TabView(selection: $selectedTab) {
+                        ForEach($tabStore.tabs) { $tab in
+                            IngredientList(list: tab.list)
+                                .tag(tab.id)
+                        }
                     }
                 }
             }

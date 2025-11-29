@@ -62,7 +62,6 @@ class APIHandler {
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
             let decoded = try JSONDecoder().decode(ComplexSearchResponse.self, from: data)
-            print(decoded.results)
             return decoded.results
         } catch {
             print("Error fetching data: \(error.localizedDescription)")
@@ -74,6 +73,7 @@ class APIHandler {
         let ingredientNames = pantry.map { $0.name }
         return await searchRecipes(ingredients: ingredientNames, number: number)
     }
+
     
     // recipe details screen
     
@@ -100,6 +100,7 @@ class APIHandler {
             let(data, _) = try await URLSession.shared.data(for: request)
             let decoded = try JSONDecoder().decode(RecipeDetailsModel.self, from: data)
             return decoded
+            
         } catch {
             print("Error fetching data: \(error.localizedDescription)")
             return nil

@@ -6,8 +6,12 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct RecipeDetailsView: View {
+    @Environment(\.modelContext) private var context
+    @Query private var recipeStore: [RecipeStore]
+    
     @EnvironmentObject var favoriteStore: FavoriteStore
     
     let recipeSummary: RecipeModel
@@ -78,7 +82,7 @@ struct RecipeDetailsView: View {
             
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
-                    favoriteStore.toggle(recipeSummary)
+                    favoriteStore.toggle(recipeSummary, recipeStore: recipeStore[0], context: context)
                 } label: {
                     Image(systemName: isFavorite ? "star.circle.fill" : "star.circle")
                         .font(.system(size: 25, weight: .light))
@@ -235,11 +239,22 @@ struct RecipeDetailsView: View {
                 
                 if !recipeSummary.analyzedInstructions.isEmpty {
                     VStack(alignment: .leading, spacing: 10) {
-                        ForEach(recipeSummary.analyzedInstructions, id: \.self) { instruction in
+                        
+                        // Lists re-sorted due to SwiftData not preserving order
+                        ForEach(
+                            recipeSummary.analyzedInstructions.sorted(by: {
+                                ($0.steps.first?.number ?? 0) < ($1.steps.first?.number ?? 0)
+                            }),
+                            id: \.self
+                        ) {
+                            instruction in
                             
                             Text(instruction.name ?? "")
                             
-                            ForEach(instruction.steps, id: \.self) {
+                            ForEach(
+                                instruction.steps.sorted(by: { $0.number < $1.number }),
+                                id: \.self
+                            ) {
                                 step in
                                 
                                 HStack(alignment: .top, spacing: 10) {
