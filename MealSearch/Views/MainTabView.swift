@@ -6,8 +6,17 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct MainTabView: View {
+    @Environment(\.modelContext) private var context
+    @Query(sort: \IngredientListModel.id) private var lists: [IngredientListModel]
+    @Query private var recipeStore: [RecipeStore]
+    
+    @EnvironmentObject var tabStore: IngredientTabStore
+    @EnvironmentObject var favoriteStore: FavoriteStore
+
+        
     @State private var selectedTab: Int = 1
     @State private var isTabBarHidden = false
     
@@ -17,19 +26,74 @@ struct MainTabView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            
-            TabView(selection: $selectedTab) {
-                IngredientsView()
-                    .tag(0)
-                
-                SearchView(isTabBarHidden: $isTabBarHidden)
-                    .tag(1)
-                
-                FavoritesView(isTabBarHidden: $isTabBarHidden)
-                    .tag(2)
+            if tabStore.tabs.count >= 2 {
+                TabView(selection: $selectedTab) {
+                    IngredientsView()
+                        .tag(0)
+                    
+                    SearchView(isTabBarHidden: $isTabBarHidden, selectedTab: $selectedTab)
+                        .tag(1)
+                    
+                    FavoritesView(isTabBarHidden: $isTabBarHidden)
+                        .tag(2)
+                }
+                if !isTabBarHidden {
+                    CustomTabBar(selectedTab: $selectedTab)
+                }
             }
-            if !isTabBarHidden {
-                CustomTabBar(selectedTab: $selectedTab)
+            else {
+                ProgressView("Loading...")
+            }
+        }
+        .onAppear {
+            if tabStore.tabs.isEmpty {
+                createDefaultListsIfNeeded()
+                tabStore.initialize(from: lists)
+            }
+            
+            if recipeStore.isEmpty {
+                createDefaultRecipeStore()
+            } else {
+                favoriteStore.favorites = recipeStore[0].favoritedRecipes
+            }
+        }
+    }
+    
+    private func createDefaultListsIfNeeded() {
+        let descriptor = FetchDescriptor<IngredientListModel>()
+
+        // Create default ingredient lists
+        if (try? context.fetch(descriptor))?.isEmpty ?? true {
+
+            let pantry = IngredientListModel(id: 0)
+            let shopping = IngredientListModel(id: 1)
+
+            context.insert(pantry)
+            context.insert(shopping)
+            
+            do {
+                try context.save()
+            } catch {
+                print("filed to create default lists: \(error)")
+            }
+        }
+    }
+    
+    private func createDefaultRecipeStore() {
+        // Create default recipe store lists
+        if recipeStore.isEmpty {
+            let fetchedRecipes: [RecipeModel] = []
+            let favoritedRecipes: [RecipeModel] = []
+            
+            context.insert(RecipeStore(
+                fetched: fetchedRecipes,
+                favorites: favoritedRecipes
+            ))
+            
+            do {
+                try context.save()
+            } catch {
+                print("filed to create default lists: \(error)")
             }
         }
     }
@@ -77,4 +141,5 @@ struct CustomTabBar: View {
     MainTabView()
         .environmentObject(IngredientTabStore())
         .environmentObject(FavoriteStore())
+        .modelContainer(for: [IngredientModel.self, IngredientListModel.self], inMemory: true)
 }

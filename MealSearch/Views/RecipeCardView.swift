@@ -5,6 +5,7 @@
 
 
 import SwiftUI
+import SwiftData
 
 struct RecipeCardView: View {
     let recipe: RecipeModel
@@ -79,6 +80,9 @@ struct RecipeCardView: View {
 }
 
 struct FavoriteButton: View {
+    @Environment(\.modelContext) private var context
+    @Query private var recipeStore: [RecipeStore]
+    
     @EnvironmentObject var favoriteStore: FavoriteStore
     let recipe: RecipeModel
     
@@ -88,7 +92,7 @@ struct FavoriteButton: View {
     
     var body: some View {
         Button {
-            favoriteStore.toggle(recipe)
+            favoriteStore.toggle(recipe, recipeStore: recipeStore[0], context: context)
         } label: {
             Image(systemName: isFavorite ? "star.circle.fill" : "star.circle")
                 .foregroundColor(isFavorite ? .starYellow : .gray)

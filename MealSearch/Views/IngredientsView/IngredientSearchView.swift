@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import SwiftData
 
 struct SearchBar: View {
     @EnvironmentObject var tabStore: IngredientTabStore
@@ -60,8 +61,8 @@ struct SearchPopover: View {
     let spoonacularAPI = APIHandler.shared
     @State private var isLoading = false
     
-    func filterIngredients() -> Void {
-        filteredIngredients = filteredIngredients.filter {
+    func filterIngredients() {
+        filteredIngredients = defaultIngredients.filter {
             $0.name.lowercased().contains(searchQuery.lowercased())
         }
     }
@@ -216,21 +217,42 @@ struct SearchPopover: View {
 }
 
 struct SearchPopoverSelection: View {
+    @Environment(\.modelContext) private var context
+    @Query(sort: \IngredientListModel.id) private var lists: [IngredientListModel]
+    @Query private var recipeStore: [RecipeStore]
+    
     @EnvironmentObject var tabStore: IngredientTabStore
     @State private var selectedTab: Int = 0
     @Environment(\.dismiss) private var closeSelection
+    
     let ingredient: IngredientModel
     let foundAt: Int
     
-    func addOrMoveIngredient(_ item: IngredientModel) -> Void {
-        if foundAt > -1 {
-            tabStore.tabs[foundAt].list.removeIngredient(item)
-        }
-        if selectedTab != -1 {
-            tabStore.tabs[selectedTab].list.addIngredient(item)
-        }
+    var sortedLists: [IngredientListModel] {
+        lists.sorted { $0.id < $1.id }
     }
     
+    func addOrMoveIngredient(_ ingredient: IngredientModel) {
+        // Remove ingredient if found
+        if foundAt > -1 {
+            let list = lists[foundAt]
+            list.removeIngredient(ingredient)
+        }
+
+        // Add ingredient to valid tab
+        if selectedTab != -1 {
+            let list = lists[selectedTab]
+            list.addIngredient(ingredient)
+        }
+        
+        // If adding to pantry, clear fetched recipes so SearchView can fetch again
+        if selectedTab == 0 {
+            recipeStore[0].setFetchedRecipes(recipes: [], context: context)
+        }
+        do { try context.save() }
+        catch { print("Save error:", error) }
+    }
+
     var body: some View {
         VStack {
             let addOrMove = foundAt > -1 ? "Move" : "Add"
