@@ -22,11 +22,11 @@ struct IngredientWheelView: View {
     var body: some View {
         ZStack {
             Circle()
-                .stroke(Color.red, lineWidth: lineWidth)
+                .stroke(Color(.wheelRed), lineWidth: lineWidth)
             Circle()
                 .trim(from: 0.0, to: max(0.0, min(matchFraction, 1.0)))
                 .stroke(
-                    Color.green,
+                    Color(.wheelGreen),
                     style: StrokeStyle(lineWidth: lineWidth)
                 )
                 .rotationEffect(.degrees(-90))
