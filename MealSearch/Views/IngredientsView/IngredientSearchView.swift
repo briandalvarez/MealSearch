@@ -249,6 +249,7 @@ struct SearchPopoverSelection: View {
         if selectedTab == 0 {
             recipeStore[0].setFetchedRecipes(recipes: [], context: context)
         }
+        
         do { try context.save() }
         catch { print("Save error:", error) }
     }

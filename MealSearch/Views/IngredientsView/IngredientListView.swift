@@ -2,6 +2,9 @@ import SwiftUI
 import SwiftData
 
 struct IngredientList: View {
+    @Environment(\.modelContext) private var context
+    @Query private var recipeStore: [RecipeStore]
+    
     var list: IngredientListModel
     @EnvironmentObject var tabStore: IngredientTabStore
 
@@ -66,6 +69,11 @@ struct IngredientList: View {
                         if let ingredient = ingredientToDelete {
                             list.removeIngredient(ingredient)
                             ingredientToDelete = nil
+                            
+                            // If adding to pantry, clear fetched recipes so SearchView can fetch again
+                            if list.id == 0 {
+                                recipeStore[0].setFetchedRecipes(recipes: [], context: context)
+                            }
                         }
                     }
                     Button("Cancel") {}
