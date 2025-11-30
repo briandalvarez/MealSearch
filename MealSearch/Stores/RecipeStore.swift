@@ -10,10 +10,10 @@ import SwiftData
 
 @Model
 class RecipeStore {
-    @Relationship(deleteRule: .cascade)
+    @Relationship
     var fetchedRecipes: [RecipeModel]
     
-    @Relationship(deleteRule: .cascade)
+    @Relationship
     var favoritedRecipes: [RecipeModel]
     
     init() {
@@ -22,30 +22,32 @@ class RecipeStore {
     }
     
     func setFetchedRecipes(recipes: [RecipeModel], context: ModelContext) {
-        while !fetchedRecipes.isEmpty {
-            fetchedRecipes.removeLast()
+        // Delete old objects in context
+        for old in fetchedRecipes {
+            context.delete(old)
         }
-        
-        recipes.forEach {
-            recipe in
-            fetchedRecipes.append(recipe)
-        }
-                
-        do { try context.save() }
-        catch { print("Save error:", error) }
+
+        // Insert new objects
+        recipes.forEach { context.insert($0) }
+
+        fetchedRecipes = recipes
+
+        try? context.save()
     }
+
+
     
     func setFavoritedRecipes(recipes: [RecipeModel], context: ModelContext) {
-        while !favoritedRecipes.isEmpty {
-            favoritedRecipes.removeLast()
+        // Delete old objects in context
+        for old in favoritedRecipes {
+            context.delete(old)
         }
-        
-        recipes.forEach {
-            recipe in
-            favoritedRecipes.append(recipe)
-        }
-        
-        do { try context.save() }
-        catch { print("Save error:", error) }
+
+        // Insert new objects
+        recipes.forEach { context.insert($0) }
+
+        favoritedRecipes = recipes
+
+        try? context.save()
     }
 }

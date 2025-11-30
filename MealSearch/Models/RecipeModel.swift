@@ -71,8 +71,8 @@ class RecipeModel: Decodable, Identifiable, Hashable {
     }
 
     init(
-        id: Int,
-        title: String,
+        id: Int = -1,
+        title: String = "",
         image: String? = "",
         readyInMinutes: Int? = 0,
         servings: Int? = 0,
@@ -105,6 +105,7 @@ class RecipeModel: Decodable, Identifiable, Hashable {
         let id = try c.decode(Int.self, forKey: .id)
         let title = try c.decode(String.self, forKey: .title)
         let image = try c.decodeIfPresent(String.self, forKey: .image)
+
         let readyInMinutes = try c.decodeIfPresent(Int.self, forKey: .readyInMinutes)
         let servings = try c.decodeIfPresent(Int.self, forKey: .servings)
         let usedIngredientCount = try c.decodeIfPresent(Int.self, forKey: .usedIngredientCount)
