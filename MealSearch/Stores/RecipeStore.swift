@@ -22,15 +22,38 @@ class RecipeStore {
     }
     
     func setFetchedRecipes(recipes: [RecipeModel], context: ModelContext) {
-        // Delete old objects in context
+        // Save the IDs of favorite recipes to preserve them
+        let favoritedIDs = Set(favoritedRecipes.map {$0.id})
+        
+        // Delete old objects in context if they have not been favorited
         for old in fetchedRecipes {
-            context.delete(old)
+            if !favoritedIDs.contains(old.id) {
+                context.delete(old)
+            }
         }
 
-        // Insert new objects
-        recipes.forEach { context.insert($0) }
+        // Insert new objects, but skip if already favorited
+        for newRecipe in recipes {
+            if !favoritedIDs.contains(newRecipe.id) {
+                context.insert(newRecipe)
+            }
+        }
 
-        fetchedRecipes = recipes
+        // Update array for fetched recipes
+        // Use the favorited instance of a recipe object if it exists, if not use a new one
+        fetchedRecipes.removeAll()
+        
+        for newRecipe in recipes {
+            var recipeToAdd = newRecipe
+            
+            for favorited in favoritedRecipes {
+                if favorited.id == newRecipe.id {
+                    recipeToAdd = favorited
+                    break
+                }
+            }
+            fetchedRecipes.append(recipeToAdd)
+        }
 
         try? context.save()
     }
@@ -38,16 +61,8 @@ class RecipeStore {
 
     
     func setFavoritedRecipes(recipes: [RecipeModel], context: ModelContext) {
-        // Delete old objects in context
-        for old in favoritedRecipes {
-            context.delete(old)
-        }
-
-        // Insert new objects
-        recipes.forEach { context.insert($0) }
-
+        // Update favorites array 
         favoritedRecipes = recipes
-
         try? context.save()
     }
 }
