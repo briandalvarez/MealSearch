@@ -53,7 +53,7 @@ struct SearchView: View {
     @State private var filteredRecipes: [RecipeModel] = []
     
     func filterIngredients() -> Void {
-        filteredRecipes = filteredRecipes.filter {
+        filteredRecipes = recipes.filter {
             $0.title.lowercased().contains(searchQuery.lowercased())
         }
     }
@@ -159,12 +159,16 @@ struct SearchView: View {
 //                        .padding(.bottom, 10)
                         .padding(.top, 20)
                         
-                        RecipeList(
-                            recipes: $filteredRecipes.isEmpty && searchQuery.trimmingCharacters(in: .whitespacesAndNewlines) == ""
+                        if filteredRecipes.isEmpty && searchQuery.trimmingCharacters(in: .whitespacesAndNewlines) != "" {
+                            Text("No results found. \n Try another search query")
+                        } else {
+                            RecipeList(
+                                recipes: $filteredRecipes.isEmpty && searchQuery.trimmingCharacters(in: .whitespacesAndNewlines) == ""
                                 ? $recipes
                                 : $filteredRecipes,
-                            isTabBarHidden: $isTabBarHidden
-                        )
+                                isTabBarHidden: $isTabBarHidden
+                            )
+                        }
                     }
                     
                 }

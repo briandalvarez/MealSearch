@@ -20,7 +20,7 @@ struct MealSearchApp: App {
                 .environmentObject(tabStore)
                 .environmentObject(favoriteStore)
         }
-        .modelContainer(for: [IngredientModel.self, IngredientListModel.self, RecipeStore.self])
+        .modelContainer(for: [IngredientListModel.self, RecipeStore.self])
     }
 }
 

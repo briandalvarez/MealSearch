@@ -82,13 +82,7 @@ struct MainTabView: View {
     private func createDefaultRecipeStore() {
         // Create default recipe store lists
         if recipeStore.isEmpty {
-            let fetchedRecipes: [RecipeModel] = []
-            let favoritedRecipes: [RecipeModel] = []
-            
-            context.insert(RecipeStore(
-                fetched: fetchedRecipes,
-                favorites: favoritedRecipes
-            ))
+            context.insert(RecipeStore())
             
             do {
                 try context.save()
@@ -141,5 +135,5 @@ struct CustomTabBar: View {
     MainTabView()
         .environmentObject(IngredientTabStore())
         .environmentObject(FavoriteStore())
-        .modelContainer(for: [IngredientModel.self, IngredientListModel.self], inMemory: true)
+        .modelContainer(for: [IngredientListModel.self, RecipeStore.self], inMemory: true)
 }

@@ -9,36 +9,35 @@ import Foundation
 import SwiftData
 
 @Model
-class IngredientListModel: Identifiable {    
+class IngredientListModel: Identifiable {
     @Attribute(.unique) var id: Int
-    var ingredients: [IngredientModel]
+    var ingredientsData: Data
+        
+    var ingredients: [IngredientModel] {
+        get {
+            (try? JSONDecoder().decode([IngredientModel].self, from: ingredientsData)) ?? []
+        }
+        set {
+            ingredientsData = (try? JSONEncoder().encode(newValue)) ?? Data()
+        }
+    }
     
     init(id: Int, ingredients: [IngredientModel] = []) {
         self.id = id
-        self.ingredients = ingredients
+        self.ingredientsData =
+            (try? JSONEncoder().encode(ingredients)) ?? Data()
     }
     
     func addIngredient(_ ingredient: IngredientModel) {
-        ingredients.append(ingredient)
+        var copy = ingredients
+        copy.append(ingredient)
+        ingredients = copy
     }
-    
+
     func removeIngredient(_ ingredient: IngredientModel) {
-        ingredients.removeAll { $0.id == ingredient.id }
+        var copy = ingredients
+        copy.removeAll { $0.id == ingredient.id }
+        ingredients = copy
     }
 }
-
-//struct IngredientListModel: Identifiable {
-//    let id: Int
-//    var ingredients: [IngredientModel]
-//
-//    mutating func addIngredient(_ ingredient: IngredientModel) -> Void {
-//        ingredients.append(ingredient)
-//    }
-//
-//    mutating func removeIngredient(_ ingredient: IngredientModel) -> Void {
-//        ingredients.removeAll {
-//            $0.id == ingredient.id
-//        }
-//    }
-//}
 

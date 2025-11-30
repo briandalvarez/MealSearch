@@ -246,9 +246,10 @@ struct SearchPopoverSelection: View {
         }
         
         // If adding to pantry, clear fetched recipes so SearchView can fetch again
-        if selectedTab == 0 {
+        if selectedTab == 0 || foundAt == 0 {
             recipeStore[0].setFetchedRecipes(recipes: [], context: context)
         }
+        
         do { try context.save() }
         catch { print("Save error:", error) }
     }
