@@ -18,13 +18,12 @@ class APIHandler {
     static let shared = APIHandler()
     private init() {}
     
-    private let apiKey = "YMMAgaOOuGtAKlMv3AGfKDtSZKzYdiIE"
-    private let baseURL = URL(string: "https://api.apilayer.com/spoonacular")!
+    private let apiKey = "9636eb8b5e6943c58a7d7836c73c9410"
+    private let baseURL = URL(string: "https://api.spoonacular.com")!
     
     private func makeRequest(url: URL) -> URLRequest {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        request.addValue(apiKey, forHTTPHeaderField: "apikey")
         return request
     }
     
@@ -38,6 +37,7 @@ class APIHandler {
         }
         
         var queryItems: [URLQueryItem] = [
+            URLQueryItem(name: "apiKey", value: apiKey),
             URLQueryItem(name: "number", value: String(number)),
             URLQueryItem(name: "addRecipeInformation", value: "true"),
             URLQueryItem(name: "addRecipeInstructions", value: "true"),
@@ -86,6 +86,7 @@ class APIHandler {
         }
         
         components.queryItems = [
+            URLQueryItem(name: "apiKey", value: apiKey),
             URLQueryItem(name: "includeNutrition", value: "false")
         ]
         
@@ -121,6 +122,7 @@ class APIHandler {
         }
         
         components.queryItems = [
+            URLQueryItem(name: "apiKey", value: apiKey),
             URLQueryItem(name: "query", value: ingredientName),
             URLQueryItem(name: "number", value: "5"),
             URLQueryItem(name: "metaInformation", value: "true")
