@@ -52,7 +52,7 @@ struct RecipeCardView: View {
         .padding(10)
         .background(Color.white)
         .cornerRadius(14)
-        .shadow(color: .black.opacity(0.06), radius: 4, x: 0, y: 2)
+        .shadow(color: .black.opacity(0.15), radius: 6, x: 0, y: 3)
         .overlay(
             VStack(spacing: 8) {
                 FavoriteButton(recipe: recipe)
