@@ -41,6 +41,8 @@ struct FavoritesView: View {
                             .padding(.horizontal, 24)
                     }
                 }
+                .frame(maxHeight: .infinity, alignment: .top)
+                .padding(.top, 140)
             }
             .navigationBarTitle("Favorites", displayMode: .large)
         }

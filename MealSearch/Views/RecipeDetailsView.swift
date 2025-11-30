@@ -193,7 +193,8 @@ struct RecipeDetailsView: View {
                 
                 if !recipeSummary.extendedIngredients.isEmpty {
                     VStack(spacing: 0) {
-                        ForEach(recipeSummary.extendedIngredients) { ingredient in
+                        ForEach(recipeSummary.extendedIngredients.indices, id: \.self) { index in
+                            let ingredient = recipeSummary.extendedIngredients[index]
                             HStack(alignment: .center, spacing: 16) {
                                 
                                 Text(ingredient.original.isEmpty ? ingredient.name : ingredient.original)

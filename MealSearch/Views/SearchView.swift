@@ -202,7 +202,13 @@ struct SearchView: View {
 
         isLoading = true
         let result = await APIHandler.shared.searchRecipes(from: pantryIngredients, number: 10)
-        recipes = result
+        recipes = result.sorted { recipe1, recipe2 in
+            if recipe1.usedIngredientCount != recipe2.usedIngredientCount {
+                return (recipe1.usedIngredientCount ?? 0) > (recipe2.usedIngredientCount ?? 0)
+            }
+            
+            return(recipe1.missedIngredientCount ?? 0) < (recipe2.missedIngredientCount ?? 0)
+        }
         
         // Make latest result persistent
         recipeStore[0].setFetchedRecipes(recipes: recipes, context: context)
