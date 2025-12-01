@@ -105,39 +105,6 @@ class APIHandler {
             ignoreIngredients: ignoreIngredients
         )
     }
-
-    
-    // recipe details screen
-    func fetchRecipeDetails(id: Int) async -> RecipeDetailsModel? {
-        guard var components = URLComponents(url: baseURL.appendingPathComponent("recipes/\(id)/information"),
-                                             resolvingAgainstBaseURL: false
-        ) else {
-            print("Invalid URL")
-            return nil
-        }
-        
-        components.queryItems = [
-            URLQueryItem(name: "apiKey", value: apiKey),
-            URLQueryItem(name: "includeNutrition", value: "false")
-        ]
-        
-        guard let url = components.url else {
-            print("Invalid URL")
-            return nil
-        }
-        
-        let request = makeRequest(url: url)
-        
-        do {
-            let(data, _) = try await URLSession.shared.data(for: request)
-            let decoded = try JSONDecoder().decode(RecipeDetailsModel.self, from: data)
-            return decoded
-            
-        } catch {
-            print("Error fetching data: \(error.localizedDescription)")
-            return nil
-        }
-    }
     
     // ingredients screen
     
