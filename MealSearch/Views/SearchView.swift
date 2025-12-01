@@ -8,16 +8,34 @@
 import SwiftUI
 import SwiftData
 
+// Displays a list of recipes with optional search filtering and pagination.
 struct RecipeList: View {
-    @Binding var recipes: [RecipeModel]
+    var displayedRecipes: [RecipeModel]
+    var isSearchEmpty: Bool
     @Binding var isTabBarHidden: Bool
+    @Binding var isLoadingMore: Bool
+    
     // Function for realizing when to load more
-    var loadMore:() -> Void = {}
+    var loadMore:(() -> Void)? = nil
     
     var body: some View {
         ScrollView {
             LazyVStack(spacing: 12) {
-                ForEach(recipes) { recipe in
+                
+                // Empty search results
+                if isSearchEmpty {
+                    VStack {
+                        Text("No results found. \n Try loading more recipes")
+                            .multilineTextAlignment(.center)
+                            .padding(.top, 40)
+                            .frame(alignment: .top)
+                    }
+                }
+                
+                // Show Recipe cards if valid search results
+
+                ForEach(displayedRecipes) {
+                    recipe in
                     NavigationLink {
                         RecipeDetailsView(
                             recipeSummary: recipe,
@@ -30,9 +48,32 @@ struct RecipeList: View {
                     }
                     .buttonStyle(.plain)
                 }
-                Color.clear
-                    .frame(height: 1)
-                    .onAppear{loadMore()}
+                
+                // Fetch recipes and add to existing lists when reached bottom of view and click "Load more recipes"
+                if let loadMore {
+                    if isLoadingMore {
+                        ProgressView()
+                            .scaleEffect(1.3)
+                            .padding(.vertical, 25)
+                    } else {
+                        Button {
+                            loadMore()
+                        } label: {
+                            Text("Load more recipes")
+                        }
+                        .padding(.vertical, 10)
+                        .padding(.horizontal, 25)
+                        .background {
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(.primaryRed)
+                        }
+                        .padding(.vertical, 30)
+                        .buttonStyle(.plain)
+                        .fontWeight(.medium)
+                        .font(.title2)
+                        .foregroundStyle(.white)
+                    }
+                }
             }
             .padding(.horizontal, 16)
             .padding(.top, 12)
@@ -55,13 +96,26 @@ struct SearchView: View {
     @EnvironmentObject var tabStore: IngredientTabStore
 
     @State private var recipes: [RecipeModel] = []
-//    @State private var recipes: [RecipeModel] = MockRecipes.all
+    @State private var filteredRecipes: [RecipeModel] = []
+
     @State private var prevIngredients: [IngredientModel] = []
     @State private var isLoading = false
     @State private var searchQuery = ""
-    @State private var filteredRecipes: [RecipeModel] = []
     
-    func filterIngredients() -> Void {
+    var isSearchEmpty: Bool {
+        filteredRecipes.isEmpty && searchQuery.trimmingCharacters(in: .whitespacesAndNewlines) != ""
+    }
+    
+    // Display filtered recipes if searching, otherwise display all recipes
+    var displayedRecipes: [RecipeModel] {
+        if searchQuery.trimmingCharacters(in: .whitespaces).isEmpty {
+            return recipes
+        } else {
+            return filteredRecipes
+        }
+    }
+        
+    func filterRecipes() -> Void {
         filteredRecipes = recipes.filter {
             $0.title.lowercased().contains(searchQuery.lowercased())
         }
@@ -84,7 +138,9 @@ struct SearchView: View {
                     }
                     .frame(maxHeight: .infinity, alignment: .top)
                     .padding(.top, 140)
-                } else if recipes.isEmpty {
+                }
+                
+                else if recipes.isEmpty {
                     let pantry = tabStore.tabs.indices.contains(0)
                         ? tabStore.tabs[0].list.ingredients
                         : []
@@ -136,6 +192,7 @@ struct SearchView: View {
                     .frame(maxHeight: .infinity, alignment: .top)
                     .padding(.top, 140)
                 }
+                
                 else {
                     VStack {
                         HStack {
@@ -150,7 +207,7 @@ struct SearchView: View {
                                 if newVal.trimmingCharacters(in: .whitespacesAndNewlines) == "" {
                                     filteredRecipes = recipes
                                 } else {
-                                    filterIngredients()
+                                    filterRecipes()
                                 }
                             }
                             Spacer()
@@ -165,27 +222,23 @@ struct SearchView: View {
                         }
                         .shadow(color: .black.opacity(0.4), radius: 4, y: 2)
                         .padding(.horizontal, 20)
-//                        .padding(.bottom, 10)
                         .padding(.top, 20)
                         
-                        if filteredRecipes.isEmpty && searchQuery.trimmingCharacters(in: .whitespacesAndNewlines) != "" {
-                            Text("No results found. \n Try another search query")
-                        } else {
-                            RecipeList(
-                                recipes: $filteredRecipes.isEmpty && searchQuery.trimmingCharacters(in: .whitespacesAndNewlines) == ""
-                                ? $recipes
-                                : $filteredRecipes,
-                                isTabBarHidden: $isTabBarHidden,
-                                loadMore: {
-                                    Task {await loadMoreRecipes()}
-                                }
-                            )
-                        }
+                        RecipeList(
+                            displayedRecipes: displayedRecipes,
+                            isSearchEmpty: isSearchEmpty,
+                            isTabBarHidden: $isTabBarHidden,
+                            isLoadingMore: $isLoadingMore,
+                            loadMore: {
+                                Task { await loadMoreRecipes() }
+                            }
+                        )
                     }
                     
                 }
             }
             .navigationBarTitle("Meal Search", displayMode: .large)
+            .frame(maxHeight: .infinity, alignment: .top)
         }
         .task {
             await loadRecipesFromAPI()
@@ -205,7 +258,6 @@ struct SearchView: View {
 
         let pantryIngredients = tabStore.tabs[0].list.ingredients
 
-
         if pantryIngredients.isEmpty {
             recipes = []
             isLoading = false
@@ -217,18 +269,12 @@ struct SearchView: View {
         if !recipeStore[0].fetchedRecipes.isEmpty { return }
 
         isLoading = true
-        let result = await APIHandler.shared.searchRecipes(from: pantryIngredients, number: 10)
-        recipes = result.sorted { recipe1, recipe2 in
-            if recipe1.usedIngredientCount != recipe2.usedIngredientCount {
-                return (recipe1.usedIngredientCount ?? 0) > (recipe2.usedIngredientCount ?? 0)
-            }
-            
-            return(recipe1.missedIngredientCount ?? 0) < (recipe2.missedIngredientCount ?? 0)
-        }
-        
+        let result = await fetchRecipes(ingredients: pantryIngredients)
+        recipes = result
+
         // Make latest result persistent
         recipeStore[0].setFetchedRecipes(recipes: recipes, context: context)
-
+        
         prevIngredients = pantryIngredients
         isLoading = false
     }
@@ -244,26 +290,72 @@ struct SearchView: View {
         isLoadingMore = true
 
         let pantryIngredients = tabStore.tabs[0].list.ingredients
-        //getting more results
-        let result = await APIHandler.shared.searchRecipes(
-            from: pantryIngredients,
+        
+        // Getting more results
+        let result = await fetchRecipes(
+            ingredients: pantryIngredients,
             number: 10,
-            offset: currentOffset + 10
+            offset: currentOffset + 10,
+            query: searchQuery
         )
+        
+//        let result = await APIHandler.shared.searchRecipes(
+//            from: pantryIngredients,
+//            number: 10,
+//            offset: currentOffset + 10,
+//            query: searchQuery
+//        )
 
+        print(result)
+        
         if result.isEmpty {
-            reachedEnd = true
+//            reachedEnd = true
         } else {
             await MainActor.run {
                 recipes.append(contentsOf: result)
+                if searchQuery.trimmingCharacters(in: .whitespacesAndNewlines) != "" {
+                    filteredRecipes.append(contentsOf: result)
+                }
+                
+                // Make latest result persistent
+                recipeStore[0].setFetchedRecipes(recipes: recipes, context: context)
+                
                 currentOffset += 10
             }
         }
         
         isLoadingMore = false
     }
-
-
+    
+    private func fetchRecipes(
+        ingredients: [IngredientModel],
+        number: Int = 10,
+        offset: Int = 0,
+        query: String = ""
+    ) async -> [RecipeModel] {
+        let result = await APIHandler.shared.searchRecipes(from: ingredients, number: number, offset: offset, query: query)
+        
+        // Sort fetched recipes by maximized used ingredients and minimized unused ingredients
+        let newRecipes = result.sorted { recipe1, recipe2 in
+            if recipe1.usedIngredientCount != recipe2.usedIngredientCount {
+                return (recipe1.usedIngredientCount ?? 0) > (recipe2.usedIngredientCount ?? 0)
+            }
+            
+            return(recipe1.missedIngredientCount ?? 0) < (recipe2.missedIngredientCount ?? 0)
+        }
+        
+        // Filter recipes if fetched duplicates
+        let filteredNewRecipes = newRecipes.filter {
+            newRecipe in
+            !recipes.contains {
+                recipe in
+                recipe.id == newRecipe.id
+            }
+        }
+        print(filteredNewRecipes)
+        
+        return filteredNewRecipes
+    }
 }
 
 

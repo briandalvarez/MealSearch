@@ -28,7 +28,7 @@ class APIHandler {
     }
     
     // meal search screen
-    func searchRecipes(ingredients: [String], number: Int = 10, offset: Int = 0) async -> [RecipeModel] {
+    func searchRecipes(ingredients: [String], number: Int = 10, offset: Int = 0, query: String = "") async -> [RecipeModel] {
         guard var components = URLComponents(url: baseURL.appendingPathComponent("recipes/complexSearch"),
                                              resolvingAgainstBaseURL: false
         ) else {
@@ -38,22 +38,26 @@ class APIHandler {
         
         var queryItems: [URLQueryItem] = [
             URLQueryItem(name: "apiKey", value: apiKey),
+            URLQueryItem(name: "query", value: query),
             URLQueryItem(name: "number", value: String(number)),
             URLQueryItem(name: "addRecipeInformation", value: "true"),
             URLQueryItem(name: "addRecipeInstructions", value: "true"),
             URLQueryItem(name: "fillIngredients", value: "true"),
-            URLQueryItem(name: "sort", value: "max-used-ingredients")
+            URLQueryItem(name: "offset", value: String(offset))
         ]
-        queryItems.append(URLQueryItem(name: "offset", value: String(offset)))
-
+        
+        // Add ingredients if they exist in pantry
         if !ingredients.isEmpty {
             let joined = ingredients.joined(separator: ",")
             queryItems.append(URLQueryItem(name: "includeIngredients", value: joined))
         }
         
+        // Sort recipes by maximum used ingredients unless searching for specific item
+        if query.trimmingCharacters(in: .whitespacesAndNewlines) == "" {
+            queryItems.append(URLQueryItem(name: "sort", value: "max-used-ingredients"))
+        }
+        
         components.queryItems = queryItems
-        
-        
         
         guard let url = components.url else {
             print("Invalid URL")
@@ -71,15 +75,14 @@ class APIHandler {
             return[]
         }
     }
-    
-    func searchRecipes(from pantry: [IngredientModel], number: Int = 10, offset: Int = 0) async -> [RecipeModel] {
+        
+    func searchRecipes(from pantry: [IngredientModel], number: Int = 10, offset: Int = 0, query: String = "") async -> [RecipeModel] {
         let ingredientNames = pantry.map { $0.name }
-        return await searchRecipes(ingredients: ingredientNames, number: number, offset: offset)
+            return await searchRecipes(ingredients: ingredientNames, number: number, offset: offset, query: query)
     }
 
     
     // recipe details screen
-    
     func fetchRecipeDetails(id: Int) async -> RecipeDetailsModel? {
         guard var components = URLComponents(url: baseURL.appendingPathComponent("recipes/\(id)/information"),
                                              resolvingAgainstBaseURL: false

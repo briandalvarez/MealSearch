@@ -21,28 +21,34 @@ struct FavoritesView: View {
                     
                     if (!$favoriteStore.favorites.isEmpty) {
                         RecipeList(
-                            recipes: $favoriteStore.favorites,
-                            isTabBarHidden: $isTabBarHidden
+                            displayedRecipes: favoriteStore.favorites,
+                            isSearchEmpty: false,
+                            isTabBarHidden: $isTabBarHidden,
+                            isLoadingMore: .constant(false),
+                            loadMore: nil
                         )
                     } else {
                         
-                        Text("No Favorites Saved")
-                            .font(.system(size: 24, weight: .semibold))
-                            .foregroundColor(.gray)
-                            .padding(.horizontal, 24)
-                        
-                        Image(systemName: "star.fill")
-                            .font(.system(size: 60))
-                            .foregroundColor(.gray.opacity(0.7))
-                        
-                        Text("Let's get cooking!")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.gray)
-                            .padding(.horizontal, 24)
+                        VStack {
+                            Text("No Favorites Saved")
+                                .font(.system(size: 24, weight: .semibold))
+                                .foregroundColor(.gray)
+                                .padding(.horizontal, 24)
+                            
+                            Image(systemName: "star.fill")
+                                .font(.system(size: 60))
+                                .foregroundColor(.gray.opacity(0.7))
+                            
+                            Text("Let's get cooking!")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(.gray)
+                                .padding(.horizontal, 24)
+                        }
+                        .padding(.top, 140)
                     }
                 }
                 .frame(maxHeight: .infinity, alignment: .top)
-                .padding(.top, 140)
+                
             }
             .navigationBarTitle("Favorites", displayMode: .large)
         }
