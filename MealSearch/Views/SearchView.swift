@@ -11,6 +11,8 @@ import SwiftData
 struct RecipeList: View {
     @Binding var recipes: [RecipeModel]
     @Binding var isTabBarHidden: Bool
+    // Function for realizing when to load more
+    var loadMore:() -> Void = {}
     
     var body: some View {
         ScrollView {
@@ -28,6 +30,9 @@ struct RecipeList: View {
                     }
                     .buttonStyle(.plain)
                 }
+                Color.clear
+                    .frame(height: 1)
+                    .onAppear{loadMore()}
             }
             .padding(.horizontal, 16)
             .padding(.top, 12)
@@ -39,6 +44,10 @@ struct RecipeList: View {
 struct SearchView: View {
     @Environment(\.modelContext) private var context
     @Query private var recipeStore: [RecipeStore]
+    
+    @State private var currentOffset = 0
+    @State private var isLoadingMore = false
+    @State private var reachedEnd = false
     
     @Binding var isTabBarHidden: Bool
     @Binding var selectedTab: Int
@@ -166,7 +175,10 @@ struct SearchView: View {
                                 recipes: $filteredRecipes.isEmpty && searchQuery.trimmingCharacters(in: .whitespacesAndNewlines) == ""
                                 ? $recipes
                                 : $filteredRecipes,
-                                isTabBarHidden: $isTabBarHidden
+                                isTabBarHidden: $isTabBarHidden,
+                                loadMore: {
+                                    Task {await loadMoreRecipes()}
+                                }
                             )
                         }
                     }
@@ -226,10 +238,37 @@ struct SearchView: View {
         let bIDs = b.map { $0.id }.sorted()
         return aIDs == bIDs
     }
+    
+    private func loadMoreRecipes() async {
+        guard !isLoadingMore && !reachedEnd else { return }
+        isLoadingMore = true
+
+        let pantryIngredients = tabStore.tabs[0].list.ingredients
+        //getting more results
+        let result = await APIHandler.shared.searchRecipes(
+            from: pantryIngredients,
+            number: 10,
+            offset: currentOffset + 10
+        )
+
+        if result.isEmpty {
+            reachedEnd = true
+        } else {
+            await MainActor.run {
+                recipes.append(contentsOf: result)
+                currentOffset += 10
+            }
+        }
+        
+        isLoadingMore = false
+    }
+
 
 }
 
+
+
 //#Preview {
-//    SearchView(isTabBarHidden: .constant(false), selectedTab: .constant(1))
-//        .environmentObject(IngredientTabStore())
+    //SearchView(isTabBarHidden: .constant(false), //selectedTab: .constant(1))
+//         .environmentObject(IngredientTabStore())
 //}

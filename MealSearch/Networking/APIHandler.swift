@@ -28,7 +28,7 @@ class APIHandler {
     }
     
     // meal search screen
-    func searchRecipes(ingredients: [String], number: Int = 10) async -> [RecipeModel] {
+    func searchRecipes(ingredients: [String], number: Int = 10, offset: Int = 0) async -> [RecipeModel] {
         guard var components = URLComponents(url: baseURL.appendingPathComponent("recipes/complexSearch"),
                                              resolvingAgainstBaseURL: false
         ) else {
@@ -44,13 +44,16 @@ class APIHandler {
             URLQueryItem(name: "fillIngredients", value: "true"),
             URLQueryItem(name: "sort", value: "max-used-ingredients")
         ]
-        
+        queryItems.append(URLQueryItem(name: "offset", value: String(offset)))
+
         if !ingredients.isEmpty {
             let joined = ingredients.joined(separator: ",")
             queryItems.append(URLQueryItem(name: "includeIngredients", value: joined))
         }
         
         components.queryItems = queryItems
+        
+        
         
         guard let url = components.url else {
             print("Invalid URL")
@@ -69,9 +72,9 @@ class APIHandler {
         }
     }
     
-    func searchRecipes(from pantry: [IngredientModel], number: Int = 10) async -> [RecipeModel] {
+    func searchRecipes(from pantry: [IngredientModel], number: Int = 10, offset: Int = 0) async -> [RecipeModel] {
         let ingredientNames = pantry.map { $0.name }
-        return await searchRecipes(ingredients: ingredientNames, number: number)
+        return await searchRecipes(ingredients: ingredientNames, number: number, offset: offset)
     }
 
     
