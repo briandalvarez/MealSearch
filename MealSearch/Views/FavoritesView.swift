@@ -21,8 +21,11 @@ struct FavoritesView: View {
                     
                     if (!$favoriteStore.favorites.isEmpty) {
                         RecipeList(
-                            recipes: $favoriteStore.favorites,
-                            isTabBarHidden: $isTabBarHidden
+                            displayedRecipes: favoriteStore.favorites,
+                            isSearchEmpty: false,
+                            isTabBarHidden: $isTabBarHidden,
+                            isLoadingMore: .constant(false),
+                            loadMore: nil
                         )
                     } else {
                         

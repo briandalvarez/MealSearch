@@ -28,7 +28,7 @@ class APIHandler {
     }
     
     // meal search screen
-    func searchRecipes(ingredients: [String], number: Int = 10, query: String = "") async -> [RecipeModel] {
+    func searchRecipes(ingredients: [String], number: Int = 10, offset: Int = 0, query: String = "") async -> [RecipeModel] {
         guard var components = URLComponents(url: baseURL.appendingPathComponent("recipes/complexSearch"),
                                              resolvingAgainstBaseURL: false
         ) else {
@@ -43,6 +43,7 @@ class APIHandler {
             URLQueryItem(name: "addRecipeInformation", value: "true"),
             URLQueryItem(name: "addRecipeInstructions", value: "true"),
             URLQueryItem(name: "fillIngredients", value: "true"),
+            URLQueryItem(name: "offset", value: String(offset))
         ]
         
         // Add ingredients if they exist in pantry
@@ -74,15 +75,14 @@ class APIHandler {
             return[]
         }
     }
-    
-    func searchRecipes(from pantry: [IngredientModel], number: Int = 10, query: String = "") async -> [RecipeModel] {
+        
+    func searchRecipes(from pantry: [IngredientModel], number: Int = 10, offset: Int = 0, query: String = "") async -> [RecipeModel] {
         let ingredientNames = pantry.map { $0.name }
-        return await searchRecipes(ingredients: ingredientNames, number: number, query: query)
+            return await searchRecipes(ingredients: ingredientNames, number: number, offset: offset, query: query)
     }
 
     
     // recipe details screen
-    
     func fetchRecipeDetails(id: Int) async -> RecipeDetailsModel? {
         guard var components = URLComponents(url: baseURL.appendingPathComponent("recipes/\(id)/information"),
                                              resolvingAgainstBaseURL: false
