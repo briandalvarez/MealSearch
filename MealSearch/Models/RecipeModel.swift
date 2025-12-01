@@ -14,16 +14,23 @@ import SwiftData
 // Identifiable protocol uses the id property below to give each recipe a unique identity
 // Hashable protocol allows recipes to be stored in sets so they can easily be compared or updated
 
+// The model supports:
+// - A custom initializer that accepts arrays and encodes them into JSON.
+// - A Decodable initializer that directly maps API JSON into the model.
+
+// Manages single step in recipe instruction
 struct InstructionStep: Codable, Hashable {
     var number: Int
     var step: String
 }
 
+// Manages single group of many recipe instructions
 struct InstructionGroup: Codable, Hashable {
     var name: String?
     var steps: [InstructionStep]
 }
 
+// SwiftData model storing various recipe information
 @Model
 class RecipeModel: Decodable, Identifiable, Hashable {
     @Attribute(.unique) var id: Int
@@ -39,9 +46,11 @@ class RecipeModel: Decodable, Identifiable, Hashable {
     var summary: String?
     var healthScore: Double?
     
+    // Raw JSON stored to avoid relationship errors
     var analyzedInstructionsJSON: Data?
     var extendedIngredientsJSON: Data?
 
+    // Transient, not stored in SwiftData, computed property decoded from stored json
     @Transient
     var analyzedInstructions: [InstructionGroup] {
         if let data = analyzedInstructionsJSON {
@@ -58,7 +67,7 @@ class RecipeModel: Decodable, Identifiable, Hashable {
         return []
     }
 
-
+    // Ratio of used to missed ingredients
     var matchRatio: Double {
         let used = usedIngredientCount ?? 0
         let missed = missedIngredientCount ?? 0
@@ -99,7 +108,10 @@ class RecipeModel: Decodable, Identifiable, Hashable {
     }
 
     // Decodable initializer
+    // Needed to convert JSON from Spoonacular API into our Swift model
     required convenience init(from decoder: Decoder) throws {
+        
+        // Keyed container, allows for reading each key by name
         let c = try decoder.container(keyedBy: CodingKeys.self)
 
         let id = try c.decode(Int.self, forKey: .id)
