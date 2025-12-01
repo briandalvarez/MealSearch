@@ -10,10 +10,10 @@ import SwiftData
 
 // Displays a list of recipes with optional search filtering and pagination.
 struct RecipeList: View {
-    var displayedRecipes: [RecipeModel]
-    var isSearchEmpty: Bool
-    @Binding var isTabBarHidden: Bool
-    @Binding var isLoadingMore: Bool
+    var displayedRecipes: [RecipeModel]     // Recipes to display
+    var isSearchEmpty: Bool     // A check for when the search returns no results
+    @Binding var isTabBarHidden: Bool   // Controls tab bar visibility
+    @Binding var isLoadingMore: Bool    // Shows loading spinner when fetching more recipes
     
     // Function for realizing when to load more
     var loadMore:(() -> Void)? = nil
@@ -41,8 +41,8 @@ struct RecipeList: View {
                             recipeSummary: recipe,
                             isTabBarHidden: $isTabBarHidden
                         )
-                        .onAppear { isTabBarHidden = true }
-                        .onDisappear { isTabBarHidden = false }
+                        .onAppear { isTabBarHidden = true } // Hide tab bar when viewing details
+                        .onDisappear { isTabBarHidden = false } // Show tab bar when returning
                     } label: {
                         RecipeCardView(recipe: recipe)
                     }
@@ -82,26 +82,34 @@ struct RecipeList: View {
     }
 }
 
+// Main Meal Search screen view
+// Displays recipes based on user's pantry ingredients with search functionality
+
 struct SearchView: View {
     @Environment(\.modelContext) private var context
-    @Query private var recipeStore: [RecipeStore]
+    @Query private var recipeStore: [RecipeStore]   // stores fetched and favorited recipes
     
+    // Pagination state
     @State private var currentOffset = 0
     @State private var isLoadingMore = false
     @State private var reachedEnd = false
     
+    // Navigation state
     @Binding var isTabBarHidden: Bool
     @Binding var selectedTab: Int
 
     @EnvironmentObject var tabStore: IngredientTabStore
-
-    @State private var recipes: [RecipeModel] = []
-    @State private var filteredRecipes: [RecipeModel] = []
-
-    @State private var prevIngredients: [IngredientModel] = []
+    
+    // Recipe data
+    @State private var recipes: [RecipeModel] = []  // All loaded recipes
+    @State private var filteredRecipes: [RecipeModel] = []  // Recipes filtered by search query
+    
+    // Search state
+    @State private var prevIngredients: [IngredientModel] = [] // Tracks pantry changes
     @State private var isLoading = false
     @State private var searchQuery = ""
     
+    // Returns true if user searched but no results found
     var isSearchEmpty: Bool {
         filteredRecipes.isEmpty && searchQuery.trimmingCharacters(in: .whitespacesAndNewlines) != ""
     }
@@ -114,7 +122,8 @@ struct SearchView: View {
             return filteredRecipes
         }
     }
-        
+    
+    // Filters loaded recipes by search query
     func filterRecipes() -> Void {
         filteredRecipes = recipes.filter {
             $0.title.lowercased().contains(searchQuery.lowercased())
@@ -126,7 +135,7 @@ struct SearchView: View {
             ZStack {
                 Color("BackgroundCream")
                     .ignoresSafeArea()
-                
+                // Loading state
                 if isLoading {
                     VStack(spacing: 12) {
                         ProgressView()
@@ -139,7 +148,7 @@ struct SearchView: View {
                     .frame(maxHeight: .infinity, alignment: .top)
                     .padding(.top, 140)
                 }
-                
+                // Empty state
                 else if recipes.isEmpty {
                     let pantry = tabStore.tabs.indices.contains(0)
                         ? tabStore.tabs[0].list.ingredients
@@ -147,6 +156,7 @@ struct SearchView: View {
                     
                     VStack(spacing: 16) {
                         if pantry.isEmpty {
+                            // Display message to user to fill pantry if it is empty
                             VStack {
                                 Text("Add your ingredients")
                                     .fontWeight(.bold)
@@ -161,6 +171,7 @@ struct SearchView: View {
                                 .font(.system(size: 60))
                                 .foregroundColor(.gray.opacity(0.7))
                             
+                            // Navigates to ingredients screen
                             Button {
                                 selectedTab = 0
                             } label: {
@@ -179,6 +190,7 @@ struct SearchView: View {
                             .font(.title)
                         }
                         else {
+                            // For when user has pantry ingredients but no recipes are found
                             Text("No Recipes Found")
                                 .font(.system(size: 24, weight: .semibold))
                                 .foregroundColor(.gray)
@@ -249,7 +261,9 @@ struct SearchView: View {
             }
         }
     }
-
+    
+    // Loads recipes from API based on current pantry ingredients
+    // Skips the call if pantry is empty or ingredients have not changed from last fetch
     private func loadRecipesFromAPI() async {
         guard tabStore.tabs.indices.contains(0) else {
             print("No tabs initialized yet, skipping recipe load")
@@ -257,7 +271,8 @@ struct SearchView: View {
         }
 
         let pantryIngredients = tabStore.tabs[0].list.ingredients
-
+        
+        // If the pantry is empty clear results and stop loading
         if pantryIngredients.isEmpty {
             recipes = []
             isLoading = false
@@ -278,20 +293,22 @@ struct SearchView: View {
         prevIngredients = pantryIngredients
         isLoading = false
     }
-
+    
+    // Compares two ingredient lists by their IDs to detect pantry changes
     private func ingredientListEqual(_ a: [IngredientModel], _ b: [IngredientModel]) -> Bool {
         let aIDs = a.map { $0.id }.sorted()
         let bIDs = b.map { $0.id }.sorted()
         return aIDs == bIDs
     }
     
+    // Fetches the next page of recipes and appends them to the list
     private func loadMoreRecipes() async {
         guard !isLoadingMore && !reachedEnd else { return }
         isLoadingMore = true
 
         let pantryIngredients = tabStore.tabs[0].list.ingredients
         
-        // Getting more results
+        // Getting more results from API with optional text query
         let result = await fetchRecipes(
             ingredients: pantryIngredients,
             number: 10,
@@ -312,6 +329,7 @@ struct SearchView: View {
 //            reachedEnd = true
         } else {
             await MainActor.run {
+                // Append new recipes and update the filtered list if the user is searching
                 recipes.append(contentsOf: result)
                 if searchQuery.trimmingCharacters(in: .whitespacesAndNewlines) != "" {
                     filteredRecipes.append(contentsOf: result)
@@ -327,6 +345,11 @@ struct SearchView: View {
         isLoadingMore = false
     }
     
+    // Requests recipes from spoonacular,
+    // Sorts by 1. Highest "usedIngredientCount"
+    //          2. Lowest "missedIngredientCount" (which serves as the tie-breaker),
+    // and also filters out any recipe IDs we already have in recipes to avoid duplicates
+    
     private func fetchRecipes(
         ingredients: [IngredientModel],
         number: Int = 10,
@@ -335,7 +358,7 @@ struct SearchView: View {
     ) async -> [RecipeModel] {
         let result = await APIHandler.shared.searchRecipes(from: ingredients, number: number, offset: offset, query: query)
         
-        // Sort fetched recipes by maximized used ingredients and minimized unused ingredients
+        // Sort fetched recipes first by used ingredients then by least missing
         let newRecipes = result.sorted { recipe1, recipe2 in
             if recipe1.usedIngredientCount != recipe2.usedIngredientCount {
                 return (recipe1.usedIngredientCount ?? 0) > (recipe2.usedIngredientCount ?? 0)
