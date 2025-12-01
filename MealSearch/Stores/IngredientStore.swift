@@ -15,8 +15,11 @@ struct IngredientTab: Identifiable {
 }
 
 class IngredientTabStore: ObservableObject {
+    
+    // Published for ease of access anywhere
     @Published var tabs: [IngredientTab] = []
     
+    // Initialize 2 default lists, Pantry and Shopping List
     func initialize(from lists: [IngredientListModel]) {
         tabs = lists.map { list in
             IngredientTab(
@@ -28,6 +31,7 @@ class IngredientTabStore: ObservableObject {
         }
     }
 
+    // Find the list index that ingredient is at (can only exist in one)
     func ingredientExistsAt(ingredientName: String) -> Int {
         for tab in tabs {
             for item in tab.list.ingredients {

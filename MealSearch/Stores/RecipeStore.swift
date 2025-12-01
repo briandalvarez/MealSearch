@@ -10,9 +10,12 @@ import SwiftData
 
 @Model
 class RecipeStore {
+    
+    // Any recipes fetched in SearchView are persisted upon closing app if needed later
     @Relationship
     var fetchedRecipes: [RecipeModel]
     
+    // Any recipes favorited in SearchView must be persisted
     @Relationship
     var favoritedRecipes: [RecipeModel]
     
@@ -59,7 +62,6 @@ class RecipeStore {
     }
 
 
-    
     func setFavoritedRecipes(recipes: [RecipeModel], context: ModelContext) {
         // Update favorites array 
         favoritedRecipes = recipes

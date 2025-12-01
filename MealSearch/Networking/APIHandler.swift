@@ -28,7 +28,7 @@ class APIHandler {
     }
     
     // meal search screen
-    func searchRecipes(ingredients: [String], number: Int = 10, offset: Int = 0, query: String = "") async -> [RecipeModel] {
+    func searchRecipes(ingredients: [String], number: Int = 10, offset: Int = 0, query: String = "", broad: Bool = false, ignoreIngredients: Bool = false) async -> [RecipeModel] {
         guard var components = URLComponents(url: baseURL.appendingPathComponent("recipes/complexSearch"),
                                              resolvingAgainstBaseURL: false
         ) else {
@@ -36,25 +36,43 @@ class APIHandler {
             return []
         }
         
+        
         var queryItems: [URLQueryItem] = [
             URLQueryItem(name: "apiKey", value: apiKey),
-            URLQueryItem(name: "query", value: query),
             URLQueryItem(name: "number", value: String(number)),
             URLQueryItem(name: "addRecipeInformation", value: "true"),
             URLQueryItem(name: "addRecipeInstructions", value: "true"),
             URLQueryItem(name: "fillIngredients", value: "true"),
-            URLQueryItem(name: "offset", value: String(offset))
         ]
         
-        // Add ingredients if they exist in pantry
-        if !ingredients.isEmpty {
-            let joined = ingredients.joined(separator: ",")
-            queryItems.append(URLQueryItem(name: "includeIngredients", value: joined))
+        // Broad Search (loosely checks titles, descriptions, etc.)
+        if broad  {
+            // Match any recipe fields while ignoring ingredients, only using search query
+            if ignoreIngredients {
+                queryItems.append(URLQueryItem(name: "query", value: query))
+            }
+            
+            // Match any recipe fields with ingredients and search query
+            else {
+                let joined = (ingredients + [query]).joined(separator: " ")
+                queryItems.append(URLQueryItem(name: "query", value: joined))
+            }
+        }
+        
+        // Strict Search (all ingredients MUST be present)
+        else {
+            // Add ingredients if they exist in pantry, strict comparison
+            if !ingredients.isEmpty {
+                let joined = ingredients.joined(separator: ",")
+                queryItems.append(URLQueryItem(name: "includeIngredients", value: joined))
+                queryItems.append(URLQueryItem(name: "titleMatch", value: query))
+            }
         }
         
         // Sort recipes by maximum used ingredients unless searching for specific item
         if query.trimmingCharacters(in: .whitespacesAndNewlines) == "" {
             queryItems.append(URLQueryItem(name: "sort", value: "max-used-ingredients"))
+            queryItems.append(URLQueryItem(name: "offset", value: String(offset)))
         }
         
         components.queryItems = queryItems
@@ -76,9 +94,16 @@ class APIHandler {
         }
     }
         
-    func searchRecipes(from pantry: [IngredientModel], number: Int = 10, offset: Int = 0, query: String = "") async -> [RecipeModel] {
+    func searchRecipes(from pantry: [IngredientModel], number: Int = 10, offset: Int = 0, query: String = "", broad: Bool = false, ignoreIngredients: Bool = false) async -> [RecipeModel] {
         let ingredientNames = pantry.map { $0.name }
-            return await searchRecipes(ingredients: ingredientNames, number: number, offset: offset, query: query)
+        return await searchRecipes(
+            ingredients: ingredientNames,
+            number: number,
+            offset: offset,
+            query: query,
+            broad: broad,
+            ignoreIngredients: ignoreIngredients
+        )
     }
 
     
